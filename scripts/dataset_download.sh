@@ -15,3 +15,6 @@ for CSV_FILE in "./database_vol/kaggle_dataset"/* ; do
         ((index++))
     fi
 done
+
+# Clean dataset tables to match each other
+python ./scripts/raw_dataset_cleaning.py
