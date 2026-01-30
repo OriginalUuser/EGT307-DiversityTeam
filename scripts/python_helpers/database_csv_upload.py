@@ -1,10 +1,12 @@
 import os
 import psycopg2
 
+POSTGRES_PASS = os.getenv('POSTGRES_PASS')
+
 clean_data_path = os.path.join(os.getcwd(), "data", "kaggle_dataset_clean")
 
 for file in os.listdir(clean_data_path):
-    with psycopg2.connect(user="admin", password="password", host="127.0.0.1", port="5432", database="sensor-db") as conn:
+    with psycopg2.connect(user="admin", password=POSTGRES_PASS, host="127.0.0.1", port="5432", database="sensor-db") as conn:
         conn.autocommit = True
         cursor = conn.cursor()
         cursor.execute("SET DateStyle = 'ISO, DMY';")
@@ -37,7 +39,7 @@ for file in os.listdir(clean_data_path):
 
         print(f"Successfully added {file} data to postgres db")
 
-with psycopg2.connect(user="admin", password="password", host="127.0.0.1", port="5432", database="sensor-db") as conn:
+with psycopg2.connect(user="admin", password=POSTGRES_PASS, host="127.0.0.1", port="5432", database="sensor-db") as conn:
     cursor = conn.cursor()
     cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema NOT IN ('pg_catalog', 'information_schema', 'pg_toast');")
     print(cursor.fetchall())
