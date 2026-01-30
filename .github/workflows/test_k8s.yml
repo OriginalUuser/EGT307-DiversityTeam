@@ -12,7 +12,7 @@ jobs:
           repository: medyagh/local-dev-example-with-minikube
 
       - name: Install script requirements
-        run: pip install
+        run: pip install -r db-requirements.txt
 
       - name: Set up minikube
         uses: medyagh/setup-minikube@latest
