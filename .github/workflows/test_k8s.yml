@@ -8,15 +8,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          repository: medyagh/local-dev-example-with-minikube
 
       - name: Install script requirements
         run: pip install
 
       - name: Set up minikube
-        uses: medyagh/setup-minikube@v1.14
-        with:
-          minikube-version: 'latest'
-          kubernetes-version: 'latest'
+        uses: medyagh/setup-minikube@latest
 
       - name: Verify cluster setup correctly
         run: kubectl get pods -A
