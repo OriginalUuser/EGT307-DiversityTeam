@@ -21,7 +21,7 @@ jobs:
         run: kubectl get pods -A
 
       - name: Set up database cluster in k8s cluster
-        run: ./scripts/database_k8s_setup.sh
+        run: bash ./scripts/database_k8s_setup.sh
         env:
           POSTGRES_PASS: ${{ secrets.POSTGRES_PASS }}
 
@@ -34,7 +34,7 @@ jobs:
           done
           echo "Tunnel is open"
 
-          ./scripts/dataset_download.sh
+          bash ./scripts/dataset_download.sh
         env:
           POSTGRES_PASS: ${{ secrets.POSTGRES_PASS }}
         
