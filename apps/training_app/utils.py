@@ -20,12 +20,11 @@ def _parse_search_space(search_space: dict) -> Dict[str, Any]:
     Parses a dictionary into skopt.space objects.
     Converting to skopt.space objects is necessary before passing into BayesSearchCV as 'search_spaces' parameters.
 
-    If unsure of what 'search_spaces' is, refer to 'specifying_model_config.md' documentation!!
-
     Parameters
     ----------
     search_space: dict
-        Dictionary specifing search_space range of parameters; Defined in conf/base/parameters_model_config/*.yml under header 'search_space'
+        Dictionary specifing search_space range of parameters;
+        Defined in conf/base/parameters_model_config/*.yml under header 'search_space'
 
     Returns
     -------
@@ -39,8 +38,8 @@ def _parse_search_space(search_space: dict) -> Dict[str, Any]:
             'y': {'type': 'Categorical', 'categories': ['a', 'b']}
         }
 
-        _parse_search_space(space)
-        {'x': Integer(1, 10), 'y': Categorical(['a', 'b'])}
+        _parse_search_space(space):
+            Returns -> {'x': Integer(1, 10), 'y': Categorical(['a', 'b'])}
     """
     bayes_search_params = {}
     for identifier, values in search_space.items():
@@ -97,9 +96,6 @@ def _init_model(
 ) -> Type[BaseEstimator]:
     """
     Initializes a ML model object with model confiuration specified in model's *.yml file.
-    Moves uses cuda if specified in model's configuration.
-
-    If unsure of what 'search_spaces' and 'options' should be, refer to 'specifying_model_config.md' documentation!!
 
     Parameters
     ----------
@@ -136,8 +132,12 @@ def _init_model(
 def _build_preprocessor(X_train: pd.DataFrame, model_config: dict) -> ColumnTransformer:
     """
     Creates dataset transformation object.
+
     Used for applying One-Hot, Label (Oritental) encoding on the entire dataset.
-    You can also refuse to apply any encoding to the dataset.
+    No data encoding is done by default unless One-Hot or Label encoding values are explicitly defined in the model configuration files.
+
+    Also used for applying feature scaling to the dataset.
+    Feature scaling is not done by default unless explicitly defined in the model configuration files.
 
     Parameters
     ----------
@@ -147,15 +147,12 @@ def _build_preprocessor(X_train: pd.DataFrame, model_config: dict) -> ColumnTran
     model_config:
         Model base hyperparameter configuration.
         Used to check datset how dataset should be encoded, as well as if the dataset requires scaling.
-
-        If encoding is not specified as a parameter, One-Hot encoding will be applied by default.;
-
         Defined in conf/base/parameters_model_config/*.yml under key 'model_params'
 
     Returns
     -------
     ColumnTransformer
-        Defines how dataset should be transformed: (OHE/Label/None) w/o Scaling
+        Defines how dataset should be transformed: (OHE/Label/None) & (Feature Scaling/No Feature Scaling)
     """
 
     # Returns subset of DataFrame cols based on col dtypes
