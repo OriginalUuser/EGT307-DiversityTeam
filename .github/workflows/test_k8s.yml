@@ -8,8 +8,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          repository: medyagh/local-dev-example-with-minikube
 
       - name: Install script requirements
         run: |
