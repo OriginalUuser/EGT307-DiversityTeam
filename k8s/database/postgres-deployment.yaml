@@ -1,0 +1,25 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: sensor-db-ha
+  labels:
+    app: database-app
+    namespace: default
+spec:
+  instances: 3
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.0
+  bootstrap:
+    initdb:
+      database: sensor-db
+      owner: admin
+      secret:
+        name: postgres-credentials-admin
+  storage:
+    pvcTemplate:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
+      storageClassName: postgres-local-disk
+      volumeMode: Filesystem
