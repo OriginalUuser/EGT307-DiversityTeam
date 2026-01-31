@@ -12,8 +12,10 @@
 
 from typing import Any, Dict, Type
 
+import os
 import yaml
 import importlib
+import psycopg2
 import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.base import BaseEstimator
@@ -24,12 +26,59 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+#####################
+# General Utilities #
+#####################
+
+
 def _parse_yaml(file_path: str) -> Dict[str, Any]:
+    """
+    Converts YAML file to python dictionary.
+
+    Parameters
+    ----------
+    file_path: str
+        YAML file path.
+
+    Returns
+    -------
+    Dict[str, Any]
+        Python dictionary of all YAML defined configurations.
+    """
     try:
         with open(file_path, "r") as f:
             return yaml.safe_load(f)
     except Exception as e:
         logger.debug(f"Failed to parse configuration file to python Dictionary: {e}")
+
+
+def _parse_to_pd(con_params: Dict) -> pd.DataFrame:
+    """
+    Fetches PostgreSQL table and converts it to a pandas DataFrame.
+
+    Parameters
+    ----------
+    con_params: Dict
+        Postgres connection data.
+
+    Returns
+    -------
+    pd.DataFrame
+        Converted table as pandas DataFrame.
+    """
+    target_table = os.getenv("TARGET_TABLE")
+    with psycopg2.connect(**con_params) as con:
+        query = f"SELECT * FROM {target_table};"
+        df = pd.read_sql(query, con)
+
+        logger.info(f"Converted {target_table} to pandas DataFrame")
+        return df
+
+
+##################
+# Node Utilities #
+##################
+
 
 def _parse_search_space(search_space: dict) -> Dict[str, Any]:
     """
