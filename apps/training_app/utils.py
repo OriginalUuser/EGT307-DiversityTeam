@@ -74,6 +74,28 @@ def _parse_to_pd(con_params: Dict) -> pd.DataFrame:
         logger.info(f"Converted {target_table} to pandas DataFrame")
         return df
 
+def _write_to_disk(model: BaseEstimator, params: dict):
+    """
+    Writes data to disk.
+    """
+
+    base_path = os.getenv("OUTPUT_PATH")
+    table_name = os.getenv("TARGET_TABLE")
+    model_name = os.getenv("MODEL_CONFIG_PATH").replace(".yaml", "")
+
+    final_dir = os.path.join(base_path, table_name, model_name)
+
+    os.makedirs(final_dir, exist_ok=True)
+
+    model_path = os.path.join(final_dir, "model.joblib")
+    param_path = os.path.join(final_dir, "params.json")
+
+    joblib.dump(model, model_path)
+    with open(param_path, 'w') as f:
+        json.dump(params, f, indent=4)
+
+    logger.info(f"Saved data to: {final_dir}")
+
 
 ##################
 # Node Utilities #
