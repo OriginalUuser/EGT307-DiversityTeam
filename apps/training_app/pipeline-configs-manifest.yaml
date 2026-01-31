@@ -1,0 +1,112 @@
+apiVersion: v1
+data:
+  db_config.yaml: |-
+    database_config:
+      user: "admin"
+      password: "password"
+      host: "127.0.0.1"
+      port: 5432
+      dbname: "sensor-db"
+  global_config.yaml: |-
+    global_training_config:
+      target_column: "ph"
+      test_size: 0.2 # Train test split ratio
+      target_column: "Activity Level"
+      random_state: 42
+      cv_splits: 5 # Cross Validation splits
+      bayes_search_n_iters: 10 # Specify Bayes Search number of iterations
+      bayes_scoring: "balanced_accuracy"
+  random_forest_config.yaml: |-
+    ############################
+    # Random Forest Parameters #
+    ############################
+
+    random_forest_config:
+      class: sklearn.ensemble.RandomForestClassifier
+      requires_scaling: False
+      data_encoding: "none"
+
+      model_params:
+        n_jobs: -1
+        oob_score: True
+        warm_start: False
+        class_weight: "balanced" # Penalize majority class errors more heavily
+        criterion: "gini"
+
+      search_space:
+        max_features:
+          type: Categorical
+          categories: ["sqrt", "log2", null]
+        min_samples_split:
+          type: Integer
+          low: 2
+          high: 25 # Higher value to prevent overfitting on noise
+        max_samples:
+          type: Real
+          low: 0.5
+          high: 1.0
+        max_depth:
+          type: Integer
+          low: 20
+          high: 100
+        n_estimators:
+          type: Integer
+          low: 200
+          high: 1000
+  xgboost_config.yaml: |-
+    ################################
+    # XGBoostClassifier Parameters #
+    ################################
+
+    xgboostClassifier_config:
+      class: xgboost.XGBClassifier
+      requires_scaling: False
+      data_encoding: "none"
+
+      model_params:
+        n_jobs: -1
+        objective: multi:softprob
+        num_class: 3
+        eval_metric: mlogloss # Logarithmic loss for multiclass optimization
+
+      search_space:
+        learning_rate:
+          type: Real
+          low: 0.01
+          high: 0.3
+          prior: log-uniform
+        max_depth:
+          type: Integer
+          low: 3
+          high: 100
+        n_estimators:
+          type: Integer
+          low: 500
+          high: 1500
+        subsample:
+          type: Real
+          low: 0.2
+          high: 1.0
+        colsample_bytree:
+          type: Real
+          low: 0.6
+          high: 1.0
+        reg_alpha:
+          type: Real
+          low: 0.0
+          high: 10.0
+        reg_lambda:
+          type: Real
+          low: 1.0
+          high: 10.0
+        gamma:
+          type: Real
+          low: 0.0
+          high: 5.0
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2026-01-31T11:36:21Z"
+  name: pipeline-configs
+  namespace: default
+  resourceVersion: "924"
+  uid: 03027ef7-9aa4-45a2-ad10-94f18ac7b46f

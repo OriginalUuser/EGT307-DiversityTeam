@@ -49,7 +49,11 @@ def _parse_yaml(file_path: str) -> Dict[str, Any]:
     """
     try:
         with open(file_path, "r") as f:
-            return yaml.safe_load(f)
+            full_config = yaml.safe_load(f)
+
+        inner_values = next(iter(full_config.values()))
+        return inner_values
+        
     except Exception as e:
         logger.debug(f"Failed to parse configuration file to python Dictionary: {e}")
 

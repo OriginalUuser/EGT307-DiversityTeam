@@ -1,0 +1,8 @@
+global_training_config:
+  target_column: "ph"
+  test_size: 0.2 # Train test split ratio
+  target_column: "Activity Level"
+  random_state: 42
+  cv_splits: 5 # Cross Validation splits
+  bayes_search_n_iters: 10 # Specify Bayes Search number of iterations
+  bayes_scoring: "balanced_accuracy"

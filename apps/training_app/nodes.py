@@ -53,7 +53,7 @@ def split_dataset(df: pd.DataFrame, options: Dict) -> Tuple:
     X_train, X_test, y_train, y_test = train_test_split(
         X,
         y,
-        test_size=options["dataset_split_ratio"],
+        test_size=options["train_size"],
         random_state=options["random_state"],
         stratify=y,
     )

@@ -1,0 +1,49 @@
+################################
+# XGBoostClassifier Parameters #
+################################
+
+xgboostClassifier_config:
+  class: xgboost.XGBClassifier
+  requires_scaling: False
+  data_encoding: "none"
+
+  model_params:
+    n_jobs: -1
+    objective: multi:softprob
+    num_class: 3
+    eval_metric: mlogloss # Logarithmic loss for multiclass optimization
+
+  search_space:
+    learning_rate:
+      type: Real
+      low: 0.01
+      high: 0.3
+      prior: log-uniform
+    max_depth:
+      type: Integer
+      low: 3
+      high: 100
+    n_estimators:
+      type: Integer
+      low: 500
+      high: 1500
+    subsample:
+      type: Real
+      low: 0.2
+      high: 1.0
+    colsample_bytree:
+      type: Real
+      low: 0.6
+      high: 1.0
+    reg_alpha:
+      type: Real
+      low: 0.0
+      high: 10.0
+    reg_lambda:
+      type: Real
+      low: 1.0
+      high: 10.0
+    gamma:
+      type: Real
+      low: 0.0
+      high: 5.0
