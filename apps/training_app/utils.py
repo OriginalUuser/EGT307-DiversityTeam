@@ -5,19 +5,24 @@
 # ╚██████╔╝   ██║   ██║███████╗███████║
 #  ╚═════╝    ╚═╝   ╚═╝╚══════╝╚══════╝
 
-# DESCRIPTION | 
+# DESCRIPTION |
 # This file stores all utility tools used by the model training pipeline.
 
+# Linted and formatted with Ruff
+
+from typing import Any, Dict, Type
+
 import importlib
-from typing import Any, Dict, Tuple, Type
 import pandas as pd
+from sklearn.compose import ColumnTransformer
+from sklearn.base import BaseEstimator
+from skopt.space import Categorical, Integer, Real
+from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
+
 import logging
 
 logger = logging.getLogger(__name__)
 
-from sklearn.compose import ColumnTransformer
-from skopt.space import Categorical, Integer, Real
-from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
 
 def _parse_search_space(search_space: dict) -> Dict[str, Any]:
     """
