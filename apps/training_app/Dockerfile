@@ -1,3 +1,4 @@
+# Use Debian 12
 FROM python:3.12-slim-bookworm
 
 WORKDIR /app
