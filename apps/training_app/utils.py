@@ -14,7 +14,9 @@ from typing import Any, Dict, Type
 
 import os
 import yaml
+import json
 import importlib
+import joblib
 import psycopg2
 import pandas as pd
 from sklearn.compose import ColumnTransformer
@@ -74,6 +76,7 @@ def _parse_to_pd(con_params: Dict) -> pd.DataFrame:
         logger.info(f"Converted {target_table} to pandas DataFrame")
         return df
 
+
 def _write_to_disk(model: BaseEstimator, params: dict):
     """
     Writes data to disk.
@@ -91,7 +94,7 @@ def _write_to_disk(model: BaseEstimator, params: dict):
     param_path = os.path.join(final_dir, "params.json")
 
     joblib.dump(model, model_path)
-    with open(param_path, 'w') as f:
+    with open(param_path, "w") as f:
         json.dump(params, f, indent=4)
 
     logger.info(f"Saved data to: {final_dir}")
