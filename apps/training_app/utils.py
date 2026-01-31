@@ -6,7 +6,7 @@
 #  ╚═════╝    ╚═╝   ╚═╝╚══════╝╚══════╝
 
 # DESCRIPTION | 
-# This file stores all utility tools used by the model training pipleine.
+# This file stores all utility tools used by the model training pipeline.
 
 import importlib
 from typing import Any, Dict, Tuple, Type
@@ -14,6 +14,10 @@ import pandas as pd
 import logging
 
 logger = logging.getLogger(__name__)
+
+from sklearn.compose import ColumnTransformer
+from skopt.space import Categorical, Integer, Real
+from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder, StandardScaler
 
 def _parse_search_space(search_space: dict) -> Dict[str, Any]:
     """
