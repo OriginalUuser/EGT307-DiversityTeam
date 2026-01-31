@@ -29,7 +29,7 @@ def _parse_yaml(file_path: str) -> Dict[str, Any]:
         with open(file_path, "r") as f:
             return yaml.safe_load(f)
     except Exception as e:
-        logger.debug(f"Failed to parse configuration file: {e}")
+        logger.debug(f"Failed to parse configuration file to python Dictionary: {e}")
 
 def _parse_search_space(search_space: dict) -> Dict[str, Any]:
     """
