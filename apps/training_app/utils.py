@@ -12,6 +12,7 @@
 
 from typing import Any, Dict, Type
 
+import yaml
 import importlib
 import pandas as pd
 from sklearn.compose import ColumnTransformer
@@ -23,6 +24,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+def _parse_yaml(file_path: str) -> Dict[str, Any]:
+    try:
+        with open(file_path, "r") as f:
+            return yaml.safe_load(f)
+    except Exception as e:
+        logger.debug(f"Failed to parse configuration file: {e}")
 
 def _parse_search_space(search_space: dict) -> Dict[str, Any]:
     """
