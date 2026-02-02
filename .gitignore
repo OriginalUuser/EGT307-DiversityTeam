@@ -2,6 +2,7 @@
 database_vol/**
 data/**
 zcool_stuff_folder/**
+workplace/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
