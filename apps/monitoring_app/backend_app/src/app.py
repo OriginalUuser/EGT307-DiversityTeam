@@ -17,10 +17,10 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 
 # Accessing the database
-# POSTGRES_PASS = os.getenv('POSTGRES_PASS')
+POSTGRES_PASS = os.getenv('POSTGRES_PASS')
 DB_NAME     = "sensor-db"
 USER        = "admin"
-PASSWORD    = "password"
+PASSWORD    = POSTGRES_PASS
 HOST        = "127.0.0.1"
 PORT        = "5432"
 engine = create_engine(f'postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DB_NAME}')
