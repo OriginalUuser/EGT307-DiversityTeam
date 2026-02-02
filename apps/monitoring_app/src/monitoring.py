@@ -47,8 +47,20 @@ def generate_report(
 
     return drift_snapshot, drift_snapshot_dict
 
-def is_data_drift(test_results: dict) -> bool:
-    ...
+def is_data_drift(report_results: dict) -> bool:
+    # In order to see if the model needs retraining, the "Overall Data Drift Report" must FAIL
+    # The "Overall Data Drift Report" shows how many of the columns failed the data drift test, measuring overall data drift of the dataset
+    
+    # Find the test for the overall data drift (The first test)
+    test_results = report_results["tests"][0]
+    assert test_results["id"] == "lt"
+
+    # Return True if the result is a failure
+    if test_results["status"] == "FAIL":
+        return True
+    else:
+        return False
+    
 
 def upload_to_ui(snapshot: Snapshot) -> None:
     ...
