@@ -1,6 +1,11 @@
+# FRONTEND MONITORING APPLICATION
+# Solely the Evidently dashboard and report UI
+
 FROM python:3.12-slim-bookworm
 
 COPY . .
+
+ENV WORKSPACE_DIR="/vol/workspace"
 
 RUN pip install --no-cache-dir evidently==0.7.20
 RUN python3 ./setup_ws.py
