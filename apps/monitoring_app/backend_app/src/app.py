@@ -18,11 +18,14 @@ app = FastAPI()
 
 # Accessing the database
 POSTGRES_PASS = os.getenv('POSTGRES_PASS')
+DATABASE_DNS = os.getenv('POSTGRES_PASS')
+DATABASE_PORT = os.getenv('POSTGRES_PASS')
+
 DB_NAME     = "sensor-db"
 USER        = "admin"
 PASSWORD    = POSTGRES_PASS
-HOST        = "0.0.0.0"
-PORT        = "5432"
+HOST        = DATABASE_DNS
+PORT        = DATABASE_PORT
 engine = create_engine(f'postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DB_NAME}')
 logger.debug("Engine created successfully")
 
@@ -44,9 +47,9 @@ project = ws.search_project("Aquaponics Monitoring")
 # if isinstance(project, list): project = project[0]
 
 class Evaluate(BaseModel):
-    table_name:         str
-    columns_to_check:   list[str]   = ["temperature", "turbidity", "dissolved_oxygen", "ph", "ammonia", "nitrate", "population", "fish_length", "fish_weight"]
-    report_range:       int         = 10000
+    table_name          : str
+    columns_to_check    : list[str] = ["temperature", "turbidity", "dissolved_oxygen", "ph", "ammonia", "nitrate", "population", "fish_length", "fish_weight"]
+    report_range        : int       = 10000
 
 @app.post("/", status_code=status.HTTP_202_ACCEPTED)
 async def post_root(payload: Evaluate):
