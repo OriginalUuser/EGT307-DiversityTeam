@@ -17,9 +17,9 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 
 # Accessing the database
-POSTGRES_PASS = os.getenv('POSTGRES_PASS')
-DATABASE_DNS = os.getenv('POSTGRES_PASS')
-DATABASE_PORT = os.getenv('POSTGRES_PASS')
+POSTGRES_PASS = os.getenv("POSTGRES_PASS")
+DATABASE_DNS = os.getenv("DATABASE_DNS")
+DATABASE_PORT = os.getenv("DATABASE_PORT")
 
 DB_NAME     = "sensor-db"
 USER        = "admin"
@@ -44,7 +44,7 @@ logger.debug("Workspace project connected successfully")
 
 # Connect to dashboard
 project = ws.search_project("Aquaponics Monitoring")
-# if isinstance(project, list): project = project[0]
+if isinstance(project, list): project = project[0]
 
 class Evaluate(BaseModel):
     table_name          : str
@@ -56,10 +56,17 @@ async def post_root(payload: Evaluate):
     # Get the most recent {report_range} rows
     sql_query = f"SELECT * FROM {payload.table_name} ORDER BY created_at DESC FETCH FIRST {payload.report_range} ROWS ONLY;"
     df = pd.read_sql(sql_query, engine)
+    df = df.loc[:, payload.columns_to_check]
     logger.debug("Data has been loaded")
 
     # Split extracted data into half for reference data and current data splits
-    halfway_point = payload.report_range / 2
+    if payload.report_range % 2 != 0:
+        # Report range must be even
+        report_range = payload.report_range + 1
+    else:
+        report_range = payload.report_range
+
+    halfway_point = int(report_range / 2)
     current = df.iloc[:halfway_point, :]
     reference = df.iloc[halfway_point:, :]
 
@@ -67,9 +74,7 @@ async def post_root(payload: Evaluate):
     drift_snapshot, drift_snapshot_dict = generate_report(
         reference_df=reference, 
         current_df=current, 
-        columns=payload.columns_to_check, 
-        num_metrics="wasserstein",
-        cat_metrics="jensenshannon"
+        columns=payload.columns_to_check
     )
 
     # Send the report to the dashboard

@@ -8,9 +8,7 @@ COPY . .
 ENV WORKSPACE_DIR="/vol/workspace"
 
 RUN pip install --no-cache-dir evidently==0.7.20
-RUN python3 ./setup_ws.py
 
 EXPOSE 8000
 
-ENTRYPOINT [ "evidently", "ui" ]
-CMD [ "--workspace", "/vol/workspace", "--host", "0.0.0.0", "--port", "8000" ]
+CMD [ "python3", "./setup_ws.py", "&&", "evidently", "ui", "--workspace", "/vol/workspace", "--host", "0.0.0.0", "--port", "8000" ]

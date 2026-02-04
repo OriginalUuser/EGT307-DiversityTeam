@@ -13,35 +13,28 @@ from typing import Union
 def generate_report(
         reference_df: DataFrame, 
         current_df: DataFrame, 
-        columns: list[str], 
-        num_metrics: str="wasserstein",
-        cat_metrics: str="jensenshannon"
-    ) -> Union[Snapshot, dict]:
+        columns: list[str],
+    ) -> tuple[Snapshot, dict]:
     """
     `generate_report()` creates a datadrift report for the specified columns in the reference and current dataset
     
     :param reference_df: Dataframe containing the data to reference (old data)
     :param current_df: Dataframe containing the current data (new data)
     :param columns: List of columns to include in the report
-    :param num_metrics: Metric to use for numerical columns 
-    :param cat_metrics: Metric to use for categorical columns 
 
     :type reference_df: pd.DataFrame
     :type current_df: pd.DataFrame
     :type columns: str
-    :type num_metrics: str (wasserstein, psi, ks)
-    :type cat_metrics: str (jensenshannon, chisquare)
 
     :return: Returns the test results in Snapshot format and dictionary format
     :rtype: Snapshot, dict
     """
     drift_report = Report([
         # Overall data drift report on the columns
-        DriftedColumnsCount(columns=columns, threshold=0.3, num_method=num_metrics, cat_method=cat_metrics),
+        DriftedColumnsCount(columns=columns, threshold=0.3, method="psi"),
 
         # Data drift report for each column
-        ColumnMetricGenerator(ValueDrift, columns=columns, column_types='num', metric_kwargs={"method": num_metrics}),
-        ColumnMetricGenerator(ValueDrift, columns=columns, column_types='cat', metric_kwargs={"method": cat_metrics}),
+        ColumnMetricGenerator(ValueDrift, columns=columns, metric_kwargs={"method": "psi", "threshold": 0.25}),
     ], include_tests=True)
 
     # Run the data drift tests
