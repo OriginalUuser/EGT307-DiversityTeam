@@ -1,0 +1,122 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monitoring-deploy
+  namespace: default
+  labels:
+    app: monitoring-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: monitoring-app
+  template:
+    metadata:
+      labels:
+        app: monitoring-app
+    spec:
+      volumes:
+        - name: monitor-pv
+          persistentVolumeClaim:
+            claimName: monitor-pvc
+
+      containers:
+      - name: monitoring-frontend
+        image: docker.io/originaluuser/divteam_monitoring_frontend:1.2
+        command: ["/bin/sh", "-c"]
+        args:
+        - >-
+          python3 ./setup_ws.py &&
+          evidently ui --workspace /vol/workspace --host 0.0.0.0 --port 8000 
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+          requests:
+            memory: "256Mi"
+            cpu: "50m"
+        ports:
+        - containerPort: 8000
+        volumeMounts:
+          - mountPath: /vol/
+            name: monitor-pv
+            mountPropagation: Bidirectional
+        securityContext:
+            privileged: true 
+        env:
+          - name: WORKSPACE_DIR
+            valueFrom:
+              configMapKeyRef:
+                name: monitoring-config
+                key: WORKSPACE_DIR
+        
+      - name: monitoring-backend
+        image: docker.io/originaluuser/divteam_monitoring_backend:1.4
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+          requests:
+            memory: "256Mi"
+            cpu: "50m"
+        ports:
+        - containerPort: 8001
+        env:
+          - name: WORKSPACE_URL
+            valueFrom:
+              configMapKeyRef:
+                name: monitoring-config
+                key: WORKSPACE_URL
+          - name: DATABASE_DNS
+            valueFrom:
+              configMapKeyRef:
+                name: monitoring-config
+                key: DATABASE_DNS
+          - name: DATABASE_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: monitoring-config
+                key: DATABASE_PORT
+          - name: POSTGRES_PASS
+            valueFrom:
+              secretKeyRef:
+                name: postgres-credentials-admin
+                key: password
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: monitoring-service
+spec:
+  selector:
+    app: monitoring-app
+  ports:
+  - name: monitor-frontend-port
+    port: 8000
+    targetPort: 8000
+  - name: monitor-backend-port
+    port: 8001
+    targetPort: 8001
+
+---
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: monitoring-app-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: monitoring-app
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 75 

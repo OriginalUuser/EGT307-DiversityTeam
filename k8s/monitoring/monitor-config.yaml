@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: monitoring-config
+data:
+  WORKSPACE_DIR: "/vol/workspace"
+  WORKSPACE_URL: "http://0.0.0.0:8000"
+  DATABASE_DNS: "sensor-db-ha-ro"
+  DATABASE_PORT: "5432"
