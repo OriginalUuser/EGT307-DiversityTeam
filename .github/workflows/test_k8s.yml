@@ -37,5 +37,8 @@ jobs:
           bash ./scripts/dataset_download.sh
         env:
           POSTGRES_PASS: ${{ secrets.POSTGRES_PASS }}
+
+      - name: Set up monitoring Deployment
+        
         
       

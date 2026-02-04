@@ -5,7 +5,7 @@ from evidently.generators import ColumnMetricGenerator
 # Typing
 from evidently.core.report import Snapshot
 from pandas import DataFrame
-from typing import Union
+from typing import Any
 
 # monitoring.py
 # Utilities for running various monitoring processes
@@ -14,6 +14,7 @@ def generate_report(
         reference_df: DataFrame, 
         current_df: DataFrame, 
         columns: list[str],
+        metadata: dict[str, Any]
     ) -> tuple[Snapshot, dict]:
     """
     `generate_report()` creates a datadrift report for the specified columns in the reference and current dataset
@@ -21,10 +22,12 @@ def generate_report(
     :param reference_df: Dataframe containing the data to reference (old data)
     :param current_df: Dataframe containing the current data (new data)
     :param columns: List of columns to include in the report
+    :param metadata: Metadata to add to the report generated
 
     :type reference_df: pd.DataFrame
     :type current_df: pd.DataFrame
     :type columns: str
+    :type metadata: dict[str, Any]
 
     :return: Returns the test results in Snapshot format and dictionary format
     :rtype: Snapshot, dict
@@ -38,7 +41,7 @@ def generate_report(
     ], include_tests=True)
 
     # Run the data drift tests
-    drift_snapshot = drift_report.run(current_data=current_df, reference_data=reference_df)
+    drift_snapshot = drift_report.run(current_data=current_df, reference_data=reference_df, metadata=metadata)
     drift_snapshot_dict = drift_snapshot.dict()
 
     return drift_snapshot, drift_snapshot_dict

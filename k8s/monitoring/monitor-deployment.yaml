@@ -6,7 +6,7 @@ metadata:
   labels:
     app: monitoring-app
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: monitoring-app
@@ -40,9 +40,6 @@ spec:
         volumeMounts:
           - mountPath: /vol/
             name: monitor-pv
-            mountPropagation: Bidirectional
-        securityContext:
-            privileged: true 
         env:
           - name: WORKSPACE_DIR
             valueFrom:
@@ -51,7 +48,7 @@ spec:
                 key: WORKSPACE_DIR
         
       - name: monitoring-backend
-        image: docker.io/originaluuser/divteam_monitoring_backend:1.4
+        image: docker.io/originaluuser/divteam_monitoring_backend:1.5
         resources:
           limits:
             memory: "512Mi"
@@ -110,13 +107,13 @@ spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: monitoring-app
-  minReplicas: 3
-  maxReplicas: 10
+    name: monitoring-deploy
+  minReplicas: 1
+  maxReplicas: 5
   metrics:
   - type: Resource
     resource:
       name: cpu
       target:
         type: Utilization
-        averageUtilization: 75 
+        averageUtilization: 75

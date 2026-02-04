@@ -74,7 +74,8 @@ async def post_root(payload: Evaluate):
     drift_snapshot, drift_snapshot_dict = generate_report(
         reference_df=reference, 
         current_df=current, 
-        columns=payload.columns_to_check
+        columns=payload.columns_to_check,
+        metadata={"table": payload.table_name}
     )
 
     # Send the report to the dashboard
