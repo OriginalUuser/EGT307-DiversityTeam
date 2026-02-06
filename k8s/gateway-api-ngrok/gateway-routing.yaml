@@ -1,0 +1,39 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: ngrok-gateway
+  namespace: default
+spec:
+  gatewayClassName: ngrok
+  listeners:
+    - name: monitor-frontend-port
+      protocol: HTTP
+      port: 8000
+      hostname: "humorous-electric-orca.ngrok-free.app"
+      allowedRoutes:
+        namespaces:
+          from: All
+
+---
+
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: monitoring-route
+  namespace: default
+spec:
+  parentRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: ngrok-gateway
+      namespace: default
+  hostnames:
+    - "humorous-electric-orca.ngrok-free.app"
+  rules:
+    - matches:
+      - path:
+          type: PathPrefix
+          value: /test
+      backendRefs:
+        - name: monitoring-service
+          port: 8000

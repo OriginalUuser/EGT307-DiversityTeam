@@ -1,0 +1,36 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: gateway-api
+  namespace: nginx-gateway
+spec:
+  gatewayClassName: nginx
+  listeners:
+  - name: monitor-frontend-port
+    port: 8000
+    protocol: HTTP
+    hostname: "*.localhost"
+    allowedRoutes:
+        namespaces:
+          from: All
+---
+
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: monitor-frontend-route
+  namespace: nginx-gateway
+spec:
+  parentRefs:
+  - name: gateway-api
+  hostnames:
+  - "app.localhost"
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /test
+    backendRefs:
+    - name: monitoring-service
+      port: 8000
+      namespace: monitoring-ns
