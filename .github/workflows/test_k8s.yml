@@ -37,7 +37,7 @@ jobs:
 
       - name: Testing monitoring deployment, send report generation request to API, send request to UI
         run: |
-          kubectl wait deployment -n default monitoring-deploy --for condition=Available=True --timeout=120s
+          kubectl wait --for=condition=Ready pod -l app=monitoring-app --namespace=default --timeout=240s
           kubectl port-forward svc/monitoring-service 8001:8001 8000:8000 &
 
           # Report generation request
