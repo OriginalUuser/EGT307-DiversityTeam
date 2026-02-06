@@ -1,0 +1,70 @@
+name: Run & Access Kuberetes Cluster
+
+on: [workflow_dispatch]
+
+jobs:
+  deploy-kubernetes-cluster-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install script requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r db-requirements.txt
+
+      - name: Set up minikube
+        uses: medyagh/setup-minikube@latest
+
+      - name: Verify cluster setup correctly
+        run: kubectl get pods -A
+
+      - name: Set up k8s cluster
+        run: bash ./setup_k8s_cluster
+        env:
+          POSTGRES_PASS: ${{ secrets.POSTGRES_PASS }}
+
+      - name: Set up GatewayAPI
+        run: bash ./scripts/gatewayapi_k8s_setup.sh
+
+      - name: Uploading CSV data to database cluster
+        run: |
+          kubectl wait --for=condition=Ready cluster/sensor-db-ha --namespace=database-ns --timeout=240s
+
+          # Open tunnel
+          kubectl port-forward svc/sensor-db-ha-rw 5432:5432 -n database-ns &
+          for i in {1..30}; do
+              if nc -z 127.0.0.1 5432; then
+                  echo "Tunnel is open!"
+                  break
+              fi
+              sleep 0.5
+          done
+
+          bash ./scripts/dataset_download.sh
+        env:
+          POSTGRES_PASS: ${{ secrets.POSTGRES_PASS }}
+
+      - name: Get ports for load balancer
+        run: |
+          kubectl wait --for=condition=Programmed=True gateway/gateway-api -n nginx-gateway --timeout=5m
+          
+          # Create tunnel to loadbalancer
+          minikube service gateway-api-nginx -n nginx-gateway > minikube_output &
+
+          # Get the ports provided by minikube
+          grep -oP ':\K\d+' minikube_output > ports
+          echo "port=$(tail -n 1 ports)" >> $GITHUB_ENV
+
+      - name: Create ngrok tunnel
+        uses: vmactions/ngrok-tunnel@v0.0.6 
+        with:
+          port: $port 
+          ngrok_authtoken: ${{ secrets.NGROK_AUTHTOKEN }}
+          tunnel_type: http
+          save_url_to_filename: ngrok_url.txt
+
+      - name: Get tunnel URL
+        run: |
+          echo "The public URL is: $(cat ngrok_url.txt)"
