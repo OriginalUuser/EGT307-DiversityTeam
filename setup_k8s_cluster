@@ -1,5 +1,8 @@
 # !/bin/bash
 
+# Setup required minikube addons
+minikube addons enable metrics-server
+
 # Startup Database Cluster
 bash ./scripts/database_k8s_setup.sh
 
