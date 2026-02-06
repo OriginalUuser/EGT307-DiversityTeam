@@ -55,7 +55,7 @@ jobs:
 
           # Get the ports provided by minikube
           grep -oP ':\K\d+' minikube_output > ports
-          echo "port=$(tail -n 1 ports)" >> $GITHUB_ENV
+          echo "port=$(tail -n 1 ports)" >> "$GITHUB_ENV"
 
       - name: Create ngrok tunnel
         uses: LuisBoto/ngrok-tunnel-action@v0.1.7.2
