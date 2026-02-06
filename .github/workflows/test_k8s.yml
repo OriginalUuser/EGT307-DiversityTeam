@@ -28,8 +28,16 @@ jobs:
       - name: Testing database cluster, uploading CSV data to database cluster
         run: |
           kubectl wait --for=condition=Ready cluster/sensor-db-ha --timeout=240s
+
+          # Open tunnel
           kubectl port-forward svc/sensor-db-ha-rw 5432:5432 &
-          echo "Tunnel is open"
+          for i in {1..30}; do
+              if nc -z 127.0.0.1 "$LOCAL_PORT"; then
+                  echo "Tunnel is open!"
+                  break
+              fi
+              sleep 0.5
+          done
 
           bash ./scripts/dataset_download.sh
         env:
@@ -38,14 +46,23 @@ jobs:
       - name: Testing monitoring deployment, send report generation request to API, send request to UI
         run: |
           kubectl wait --for=condition=Ready pod -l app=monitoring-app --namespace=default --timeout=240s
+
+          # Open tunnel
           kubectl port-forward svc/monitoring-service 8001:8001 8000:8000 &
+          for i in {1..30}; do
+              if nc -z 127.0.0.1 "$LOCAL_PORT"; then
+                  echo "Tunnel is open!"
+                  break
+              fi
+              sleep 0.5
+          done
 
           # Report generation request
-          curl -v -X POST http://localhost:8001 -H "Content-Type: application/json" -d '{"table_name": "iot_pond_1"}'
+          curl -v -X POST http://127.0.0.1:8001 -H "Content-Type: application/json" -d '{"table_name": "iot_pond_1"}'
 
           # Monitoring API request
-          curl -v http://localhost:8001
+          curl -v http://127.0.0.1:8001
 
           # Evidently UI request, checks if the project was created successfully
-          curl -v http://localhost:8000/api/projects/search/Aquaponics%20Monitoring
+          curl -v http://127.0.0.1:8000/api/projects/search/Aquaponics%20Monitoring
       
