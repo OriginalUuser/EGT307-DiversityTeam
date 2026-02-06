@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: monitoring-deploy
-  namespace: default
+  namespace: monitoring-ns
   labels:
     app: monitoring-app
 spec:
@@ -86,6 +86,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: monitoring-service
+  namespace: monitoring-ns
 spec:
   selector:
     app: monitoring-app
@@ -103,6 +104,7 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: monitoring-app-hpa
+  namespace: monitoring-ns
 spec:
   scaleTargetRef:
     apiVersion: apps/v1

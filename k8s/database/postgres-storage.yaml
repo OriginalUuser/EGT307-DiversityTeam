@@ -2,7 +2,7 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: postgres-local-disk
-  namespace: default
+  namespace: database-ns
 provisioner: k8s.io/minikube-hostpath
 reclaimPolicy: Retain
 volumeBindingMode: Immediate

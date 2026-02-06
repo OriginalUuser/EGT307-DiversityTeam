@@ -2,9 +2,9 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   name: sensor-db-ha
+  namespace: database-ns
   labels:
     app: database-app
-    namespace: default
 spec:
   instances: 3
   imageName: ghcr.io/cloudnative-pg/postgresql:18.0

@@ -7,6 +7,9 @@ if minikube status | grep -q "host: Running"; then
     kubectl wait --for=condition=available deployment/cnpg-controller-manager -n cnpg-system --timeout=120s
     kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=cloudnative-pg -n cnpg-system --timeout=120s
 
+    # Setup namespace
+    kubectl apply -f ./k8s/database/postgres-namespace.yaml
+
     # Setup secrets
     envsubst < ./k8s/database/postgres-credentials.yaml | kubectl apply -f -
 
