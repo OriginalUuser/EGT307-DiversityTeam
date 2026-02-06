@@ -6,13 +6,13 @@ metadata:
 spec:
   gatewayClassName: nginx
   listeners:
-  - name: monitor-frontend-port
-    port: 8000
+  - name: monitoring-dashboard-listener
+    port: 80
     protocol: HTTP
-    hostname: "*.localhost"
     allowedRoutes:
         namespaces:
           from: All
+
 ---
 
 apiVersion: gateway.networking.k8s.io/v1
@@ -23,13 +23,12 @@ metadata:
 spec:
   parentRefs:
   - name: gateway-api
-  hostnames:
-  - "app.localhost"
+    sectionName: monitoring-dashboard-listener
   rules:
   - matches:
     - path:
         type: PathPrefix
-        value: /test
+        value: /
     backendRefs:
     - name: monitoring-service
       port: 8000
