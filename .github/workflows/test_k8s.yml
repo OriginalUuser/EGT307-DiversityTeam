@@ -20,25 +20,32 @@ jobs:
       - name: Verify cluster setup correctly
         run: kubectl get pods -A
 
-      - name: Set up database cluster in k8s cluster
-        run: bash ./scripts/database_k8s_setup.sh
+      - name: Set up k8s cluster
+        run: bash ./setup_k8s_cluster
         env:
           POSTGRES_PASS: ${{ secrets.POSTGRES_PASS }}
 
-      - name: Uploading CSV data to database cluster
+      - name: Testing database cluster, uploading CSV data to database cluster
         run: |
+          kubectl wait deployment -n cnpg-system cnpg-controller-manager --for condition=Available=True --timeout=120s
           kubectl port-forward svc/sensor-db-ha-rw 5432:5432 &
-          echo "Waiting for db tunnel to open..."
-          until nc -z localhost 5432; do
-            sleep 1
-          done
           echo "Tunnel is open"
 
           bash ./scripts/dataset_download.sh
         env:
           POSTGRES_PASS: ${{ secrets.POSTGRES_PASS }}
 
-      - name: Set up monitoring Deployment
-        
-        
+      - name: Testing monitoring deployment, send report generation request to API, send request to UI
+        run: |
+          kubectl wait deployment -n default monitoring-deploy --for condition=Available=True --timeout=120s
+          kubectl port-forward svc/monitoring-service 8001:8001 8000:8000 &
+
+          # Report generation request
+          curl -v -X POST http://localhost:8001 -H "Content-Type: application/json" -d '{"table_name": "iot_pond_1"}'
+
+          # Monitoring API request
+          curl -v http://localhost:8001
+
+          # Evidently UI request, checks if the project was created successfully
+          curl -v http://localhost:8000/api/projects/search/Aquaponics%20Monitoring
       
