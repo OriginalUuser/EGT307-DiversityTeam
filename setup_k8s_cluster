@@ -1,7 +1,8 @@
 # !/bin/bash
 
-# Setup required minikube addons
+# Setup
 minikube addons enable metrics-server
+kubectl -n kube-system apply -f https://github.com/emberstack/kubernetes-reflector/releases/latest/download/reflector.yaml
 
 # Startup Database Cluster
 bash ./scripts/database_k8s_setup.sh

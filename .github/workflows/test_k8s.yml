@@ -27,7 +27,7 @@ jobs:
 
       - name: Testing database cluster, uploading CSV data to database cluster
         run: |
-          kubectl wait --for=condition=Ready cluster/sensor-db-ha --timeout=240s
+          kubectl wait --for=condition=Ready cluster/sensor-db-ha --namespace=database-ns --timeout=240s
 
           # Open tunnel
           kubectl port-forward svc/sensor-db-ha-rw 5432:5432 -n database-ns &
@@ -45,7 +45,7 @@ jobs:
 
       - name: Testing monitoring deployment, send report generation request to API, send request to UI
         run: |
-          kubectl wait --for=condition=Ready pod -l app=monitoring-app --namespace=default --timeout=240s
+          kubectl wait --for=condition=Ready pod -l app=monitoring-app --namespace=monitoring-ns --timeout=240s
 
           # Open tunnel
           kubectl port-forward svc/monitoring-service 8001:8001 8000:8000 -n monitoring-ns &
