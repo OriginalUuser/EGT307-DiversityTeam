@@ -51,7 +51,7 @@ jobs:
           kubectl wait --for=condition=Programmed=True gateway/gateway-api -n nginx-gateway --timeout=5m
           
           # Create tunnel to loadbalancer
-          minikube service gateway-api-nginx -n nginx-gateway > minikube_output &
+          minikube service gateway-api-nginx -n nginx-gateway --url=true > minikube_output &
 
           # Get the ports provided by minikube
           grep -oP ':\K\d+' minikube_output > ports
@@ -60,7 +60,7 @@ jobs:
       - name: Create ngrok tunnel
         uses: LuisBoto/ngrok-tunnel-action@v0.1.7.2
         with:
-          port: $port 
+          port: $port
           ngrok_authtoken: ${{ secrets.NGROK_AUTHTOKEN }}
           tunnel_type: http
           save_url_to_filename: ngrok_url.txt
