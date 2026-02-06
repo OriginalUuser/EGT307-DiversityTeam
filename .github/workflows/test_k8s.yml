@@ -27,7 +27,7 @@ jobs:
 
       - name: Testing database cluster, uploading CSV data to database cluster
         run: |
-          kubectl wait deployment -n cnpg-system cnpg-controller-manager --for condition=Available=True --timeout=120s
+          kubectl wait --for=condition=Ready cluster/sensor-db-ha --timeout=240s
           kubectl port-forward svc/sensor-db-ha-rw 5432:5432 &
           echo "Tunnel is open"
 
