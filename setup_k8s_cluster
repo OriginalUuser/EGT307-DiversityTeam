@@ -1,9 +1,9 @@
 # !/bin/bash
 
 # Startup Database Cluster
-./scripts/database_k8s_setup.sh
+bash ./scripts/database_k8s_setup.sh
 
 # Startup Monitoring Application
-./scripts/monitoring_k8s_setup.sh
+bash ./scripts/monitoring_k8s_setup.sh
 
 echo "Finished setting up k8s cluster"
