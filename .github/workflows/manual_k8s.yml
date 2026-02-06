@@ -58,7 +58,7 @@ jobs:
           echo "port=$(tail -n 1 ports)" >> $GITHUB_ENV
 
       - name: Create ngrok tunnel
-        uses: vmactions/ngrok-tunnel@v0.0.6 
+        uses: LuisBoto/ngrok-tunnel-action@v0.1.7.2
         with:
           port: $port 
           ngrok_authtoken: ${{ secrets.NGROK_AUTHTOKEN }}
