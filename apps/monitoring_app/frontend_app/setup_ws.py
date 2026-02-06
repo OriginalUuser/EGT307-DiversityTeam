@@ -1,7 +1,4 @@
 from evidently.ui.workspace import Workspace, ProjectModel
-from evidently.ui.workspace import RemoteWorkspace
-from evidently.sdk.models import PanelMetric
-from evidently.sdk.panels import line_plot_panel
 
 import os
 import logging
