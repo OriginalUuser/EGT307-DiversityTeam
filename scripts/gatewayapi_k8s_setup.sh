@@ -21,3 +21,7 @@ kubectl apply --server-side -f https://raw.githubusercontent.com/nginx/nginx-gat
 
 # Deploy NGINX Gateway Fabric with NGINX Open Source and nodeSelector 
 kubectl apply -f ./k8s/gateway-api-nginx/gateway-deployment.yaml
+
+# Setup up GatewayAPI
+kubectl apply -f ./k8s/gateway-api-nginx/gateway-referencegrant.yaml
+kubectl apply -f ./k8s/gateway-api-nginx/gateway-gateway.yaml
