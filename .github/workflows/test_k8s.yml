@@ -30,7 +30,7 @@ jobs:
           kubectl wait --for=condition=Ready cluster/sensor-db-ha --timeout=240s
 
           # Open tunnel
-          kubectl port-forward svc/sensor-db-ha-rw 5432:5432 -n databse-ns &
+          kubectl port-forward svc/sensor-db-ha-rw 5432:5432 -n database-ns &
           for i in {1..30}; do
               if nc -z 127.0.0.1 5432; then
                   echo "Tunnel is open!"
