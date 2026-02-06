@@ -77,7 +77,7 @@ spec:
           - name: POSTGRES_PASS
             valueFrom:
               secretKeyRef:
-                name: postgres-credentials-admin
+                name: mirror-postgres-credentials-admin
                 key: password
 
 ---
@@ -94,6 +94,7 @@ spec:
   - name: monitor-frontend-port
     port: 8000
     targetPort: 8000
+    protocol: TCP
   - name: monitor-backend-port
     port: 8001
     targetPort: 8001
