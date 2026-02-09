@@ -7,7 +7,7 @@ rm ./data/kaggle_dataset.zip
 
 # # Clean dataset tables to match each other
 mkdir ./data/kaggle_dataset_clean
-sed -i "s/Jan-00/12.45/g" "./data/kaggle_dataset_raw/IoTPond4.csv"
+# sed -i "s/Jan-00/12.45/g" "./data/kaggle_dataset_raw/IoTPond4.csv"
 python ./scripts/python_helpers/raw_dataset_cleaning.py
 
 # Upload data to the database

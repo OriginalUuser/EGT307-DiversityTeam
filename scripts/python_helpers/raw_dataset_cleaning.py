@@ -20,6 +20,8 @@ for file in os.listdir(raw_data_path):
     elif file == "IoTPond9.csv":
         loc_index = df.columns.get_loc("Nitrate(g/ml)") + 1
         df.insert(loc=loc_index, column="population", value=None)
+    elif file == "IoTPond4.csv":
+        df["Fish_Length(cm)"] = df["Fish_Length(cm)"].map(lambda x: 12.45 if x == "Jan-00" else x)
 
     # Remove extra columns
     df.columns = [col.lower() for col in df.columns]
