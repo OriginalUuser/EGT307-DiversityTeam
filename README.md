@@ -28,13 +28,21 @@
 
 # Execution Instructions
 
+## Needed packages:
+
+LINUX
+dos2unix
+
+MAC:
+gettext
+
 ## How to set up the database
 
 1. Run `export POSTGRES_PASS=password` to set up the password that the database will use (does not matter what the password is)
-1. Run `.\scripts\database_k8s_setup.sh`
+1. Run `./scripts/database_k8s_setup.sh`
 2. Once the cluster has finished setting up (pods are running), Run `kubectl port-forward svc/sensor-db-ha-rw 5432:5432`
 3. Run `pip install -r db-requirements.txt`
-3. Run `.\scripts\dataset_download.sh`
+3. Run `./scripts/dataset_download.sh`
 
 Congratulations, you have started the kubernetes database cluster!!!
 
@@ -51,5 +59,6 @@ Check `test\database.ipynb` for how to access and use the database locally or wi
 ...
 
 # Data Source
+
 
 # Limitations 
