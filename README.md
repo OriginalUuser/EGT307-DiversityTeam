@@ -27,22 +27,24 @@
 # Project Objectives
 
 # Execution Instructions
+1. Requires docker & minikube to run (This is for you, Matthew Christopher Tan Ming Wen, admin number: 230649F <3)
 
 ## Needed packages:
 
 LINUX
-dos2unix
+1. Install packages `sudo apt install postgresql`
+2. If needed, convert bash file formats: `sudo apt install dos2unix` -> `dos2unix path/to/bash-file`
 
 MAC:
-gettext, postgresql
+1. Install packages `brew install gettext postgresql`
 
 ## How to set up the database
 
 1. Run `export POSTGRES_PASS=password` to set up the password that the database will use (does not matter what the password is)
-1. Run `./scripts/database_k8s_setup.sh`
-2. Once the cluster has finished setting up (pods are running), Run `kubectl port-forward svc/sensor-db-ha-rw 5432:5432`
+1. Run `bash ./scripts/database_k8s_setup.sh`
+2. Once the cluster has finished setting up (pods are running), Run `kubectl port-forward svc/sensor-db-ha-rw 5432:5432 -n database-ns`
 3. Run `pip install -r db-requirements.txt`
-3. Run `./scripts/dataset_download.sh`
+3. Run `bash ./scripts/dataset_download.sh`
 
 Congratulations, you have started the kubernetes database cluster!!!
 
@@ -62,4 +64,5 @@ Check `test\database.ipynb` for how to access and use the database locally or wi
 
 
 # Limitations 
+
 
