@@ -1,7 +1,7 @@
 """
 - Ingests data payload from fast api 
 - Ensure format of the data matches database (data type/schema matches, no missing columns, "add additional columns")
-- Send data "payload" to the database with whatever code darren put in /test
+- Send data "payload" to the database
 """
 
 import pandas as pd
@@ -95,7 +95,7 @@ def checkDataType(data: Any, expectedType: type) -> tuple[bool, Any, Any]:
 
     return False, correctedData, None
 
-def checkPayloadSchema(payload: dict) -> tuple[dict, set[str], bool]:
+def checkPayloadSchema(payload: dict) -> tuple[dict[str:Any], set[str], dict[str:Any], bool]:
 
     """
     Payload Content Checking Process:
@@ -155,7 +155,7 @@ def checkPayloadSchema(payload: dict) -> tuple[dict, set[str], bool]:
         if {col} < set(imputationValues.keys()):
             imputationValues[col] += 0.05 * (payload[col] - imputationValues[col])
         
-    return formattedPayload, additionalColumns, clearToSend
+    return formattedPayload, additionalColumns, expectedSchema, clearToSend
 
 # checkPayloadSchema(
 #     {
