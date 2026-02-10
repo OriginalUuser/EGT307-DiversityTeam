@@ -34,7 +34,7 @@ LINUX
 dos2unix
 
 MAC:
-gettext
+gettext, postgresql
 
 ## How to set up the database
 
@@ -62,3 +62,4 @@ Check `test\database.ipynb` for how to access and use the database locally or wi
 
 
 # Limitations 
+
