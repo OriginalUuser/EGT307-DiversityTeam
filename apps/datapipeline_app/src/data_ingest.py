@@ -37,6 +37,15 @@ imputationValues = {
 
 expectedColumns = set(expectedSchema.keys())
 
+tableNames = {'iot_pond_1', 'iot_pond_2', 'iot_pond_3', 'iot_pond_4', 'iot_pond_6', 'iot_pond_7', 'iot_pond_8', 'iot_pond_9', 'iot_pond_10', 'iot_pond_11', 'iot_pond_12'}
+
+def tableExists(table_name: str) -> bool:
+    """
+    Check if table exists in database
+    """
+    return {table_name} < tableNames
+
+
 def checkColumnsPresent(payload: dict) -> tuple[bool, set[str]]:
 
     """
@@ -78,6 +87,31 @@ def checkDataType(data: Any, expectedType: type) -> tuple[bool, Any, Any]:
     # Check if data is from additional column
     if expectedType == None:
         return False, None, type(data)
+
+    # Check if data is time based
+    if expectedType == pd.Timestamp:
+        if type(data) == expectedType:
+            return True, None, None
+    
+        else:
+
+            # Attempt type casting
+            try:
+                correctedData = pd.Timestamp(data)
+                correctedData = pd.to_datetime(correctedData, format='%Y-%m-%d %H:%M:%S %Z', errors='coerce')
+
+                # If error, treat as bad data
+                if pd.isnull(correctedData):
+                    correctedData = None
+                else:
+                    correctedData = str(correctedData.tz_localize('CET'))
+
+            # If error, treat as bad data
+            except ValueError:
+                correctedData = None
+        return False, correctedData, None
+
+            
 
     # Check if actual type matches expected type
     if type(data) == expectedType:
@@ -145,30 +179,36 @@ def checkPayloadSchema(payload: dict) -> tuple[dict[str:Any], set[str], dict[str
     clearToSend = len(missingColumns) + len(missingData) <= 0.2 * len(expectedColumns)
 
     # Impute Missing Values and Columns (if not discarding payload)
-    if clearToSend and not columnsAllPresent:
-        for col in missingColumns:
-            formattedPayload.update({col:imputationValues[col]})
+    if clearToSend:
+        if not columnsAllPresent:
+            for col in missingColumns:
+                formattedPayload.update({col:imputationValues[col]})
+        if missingData != None:
+            for col in missingData:
+                formattedPayload[col] = imputationValues[col]
+    
     
     # Update Imputation Values
-    valuesToChange = set(columnsActual) - missingData
-    for col in valuesToChange:
-        if {col} < set(imputationValues.keys()):
-            imputationValues[col] += 0.05 * (payload[col] - imputationValues[col])
+    # valuesToChange = set(columnsActual) - missingData
+    # for col in valuesToChange:
+    #     if {col} < set(imputationValues.keys()):
+    #         imputationValues[col] += 0.05 * (formattedPayload[col] - imputationValues[col])
         
     return formattedPayload, additionalColumns, expectedSchema, clearToSend
 
+# Test code for checkPayloadSchema()
 # checkPayloadSchema(
-#     {
-#     "created_at":           pd.Timestamp('2026-1-1'),
-#     "entry_id":             0,
-#     "temperature":          27.0,
-#     "turbidity":            100,
-#     "dissolved_oxygen":     25.0,
-#     "ph":                   6.0,
-#     "ammonia":              6,
-#     "nitrate":              900,
-#     "population":           50,
-#     "fish_length":          7.11,
-#     "fish_weight":          2.91
-#     }
+    # {
+    # "created_at":           pd.Timestamp('2026-1-1'),
+    # "entry_id":             0,
+    # "temperature":          27.0,
+    # "turbidity":            100,
+    # "dissolved_oxygen":     25.0,
+    # "ph":                   6.0,
+    # "ammonia":              6,
+    # "nitrate":              900,
+    # "population":           50,
+    # "fish_length":          7.11,
+    # "fish_weight":          2.91
+    # }
 # )
