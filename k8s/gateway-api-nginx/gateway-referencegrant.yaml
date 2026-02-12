@@ -16,12 +16,12 @@ spec:
 
 ---
 
-# ReferenceGrant nginx-gateway HTTPRoute -> ingestion-service in monitoring-ns
+# ReferenceGrant nginx-gateway HTTPRoute -> ingestion-service in ingestion-ns
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: ReferenceGrant
 metadata:
-  name: access-monitoring-ns
-  namespace: monitoring-ns
+  name: access-ingestion-ns
+  namespace: ingestion-ns
 spec:
   from:
   - group: gateway.networking.k8s.io
@@ -30,4 +30,4 @@ spec:
   to:
   - group: "" 
     kind: Service
-    name: monitoring-service
+    name: ingestion-service
