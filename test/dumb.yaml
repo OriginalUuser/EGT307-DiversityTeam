@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: testbuild
+  namespace: database-ns
+spec:
+  containers:
+  - name: testbuild
+    image: matthewchristophertanmingwen/testbuild:1.9
+    command: ["uvicorn", "test:app", "--host", "0.0.0.0", "--port", "1234" ]
+    # command: ["python", "test.py"]
+    env:
+    - name: POSTGRES_PASS
+      value: password

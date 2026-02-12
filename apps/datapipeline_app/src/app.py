@@ -14,7 +14,7 @@ from fastapi import FastAPI, status
 import psycopg2
 import os
 
-from data_ingest import checkPayloadSchema
+from .data_ingest import checkPayloadSchema
 
 # Connect to database
 POSTGRES_PASS = os.getenv('POSTGRES_PASS')
