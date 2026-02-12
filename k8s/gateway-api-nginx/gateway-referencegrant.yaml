@@ -1,3 +1,22 @@
+# ReferenceGrant nginx-gateway HTTPRoute -> monitoring-service in monitoring-ns
+apiVersion: gateway.networking.k8s.io/v1beta1
+kind: ReferenceGrant
+metadata:
+  name: access-monitoring-ns
+  namespace: monitoring-ns
+spec:
+  from:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    namespace: nginx-gateway
+  to:
+  - group: "" 
+    kind: Service
+    name: monitoring-service
+
+---
+
+# ReferenceGrant nginx-gateway HTTPRoute -> ingestion-service in monitoring-ns
 apiVersion: gateway.networking.k8s.io/v1beta1
 kind: ReferenceGrant
 metadata:
