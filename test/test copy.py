@@ -33,7 +33,7 @@ cursor = conn.cursor()
 #         ); 
 #         '''
 # cursor.execute(create_table)
-cursor.execute("SELECT * FROM iot_pond_1;")
+cursor.execute("SELECT * FROM iot_pond_1 ORDER BY created_at DESC LIMIT 5;")
 # cursor.execute("SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema NOT IN ('pg_catalog', 'information_schema', 'pg_toast');")
 print(cursor.fetchall())
 # hi = {"a":'0', "b":1}
