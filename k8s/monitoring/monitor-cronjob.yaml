@@ -2,6 +2,7 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: monitoring-scheduled-job
+  namespace: monitoring-ns
 spec:
   schedule: "0 0 * * *" # Every night at midnight
   jobTemplate:
