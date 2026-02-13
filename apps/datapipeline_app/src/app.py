@@ -58,9 +58,8 @@ def post_root(payload: Evaluate):
         # Send data to corresponding table in database
         print("sending data to database")
         cursor.execute(f"INSERT INTO {payload.table_name} {str(tuple(formattedPayload.keys())).replace("'", "")} VALUES {str(tuple(formattedPayload.values()))};")
-        cursor.execute(f"SELECT * FROM {payload.table_name};")
         
         # Update schema + imputation values
 
-        return cursor.fetchall()
+        return formattedPayload
     print("discarding bad data")
