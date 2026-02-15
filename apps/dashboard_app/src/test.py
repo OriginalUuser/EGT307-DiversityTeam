@@ -243,7 +243,6 @@
 
 
 import streamlit as st
-from pathlib import Path
 from retrieve import load_pond_data
 from streamlit_autorefresh import st_autorefresh
 import datetime
@@ -262,27 +261,32 @@ st.set_page_config(
 # Pond configuration
 # -------------------------------
 POND_FILES = {
-    "Pond 1": r"archive\IoTpond1.csv",
-    "Pond 2": r"archive\IoTpond2.csv",
-    "Pond 3": r"archive\IoTpond3.csv",
-    "Pond 4": r"archive\IoTpond4.csv",
+    "Pond 1": "iot_pond_1",
+    "Pond 2": "iot_pond_2",
+    "Pond 3": "iot_pond_3",
+    "Pond 4": "iot_pond_4",
 }
 
 # -------------------------------
 # Sensor configuration
 # -------------------------------
 SENSORS = {
-    "Temperature (°C)": "temperaturec",
+    "Temperature (°C)": "temperature",
     "pH": "ph",
-    "Dissolved Oxygen (g/ml)": "dissolvedoxygeng/ml",
-    "Turbidity (NTU)": "turbidityntu",
-    "Ammonia (g/ml)": "ammoniag/ml",
-    "Nitrate (g/ml)": "nitrateg/ml"
+    "Dissolved Oxygen (g/ml)": "dissolved_oxygen",
+    "Turbidity (NTU)": "turbidity",
+    "Ammonia (g/ml)": "ammonia",
+    "Nitrate (g/ml)": "nitrate"
 }
 
 WINDOW_SIZE = 100
 FORECAST_HORIZON = 10
 TREND_EPSILON = 0.01
+
+# -------------------------------
+# App Mode Toggle
+# -------------------------------
+SIMULATION_MODE = True  # 🔁 Set to False for deployment
 
 # -------------------------------
 # Sidebar controls
@@ -303,7 +307,7 @@ refresh_rate = st.sidebar.slider(
 refresh_ms = refresh_rate * 1000
 
 # -------------------------------
-# 🔁 GLOBAL AUTO REFRESH (FIX)
+# 🔁 GLOBAL AUTO REFRESH
 # -------------------------------
 refresh_counter = st_autorefresh(
     interval=refresh_ms,
@@ -316,30 +320,49 @@ st.caption(
 )
 
 # -------------------------------
-# Cached data retrieval (FIXED)
+# Cached data retrieval
 # -------------------------------
 @st.cache_data
-def get_data(csv_path, refresh_counter):  # 🔁 refresh fix
-    return load_pond_data(csv_path)
+def get_data(table_name, refresh_counter):
+    return load_pond_data(
+        table_name=table_name,
+        window_size=WINDOW_SIZE,
+        forecast_horizon=FORECAST_HORIZON
+    )
 
 # -------------------------------
-# Sliding window helper
+# Unified Window Logic
 # -------------------------------
-def get_sliding_window(df, state_key):
-    if state_key not in st.session_state:
-        st.session_state[state_key] = 0
+def get_window_data(df, state_key):
+    """
+    Returns (window_df, forecast_df)
+    Behavior depends on SIMULATION_MODE
+    """
 
-    max_start = len(df) - (WINDOW_SIZE + FORECAST_HORIZON)
-    start = min(st.session_state[state_key], max_start)
+    if SIMULATION_MODE:
+        # ---- Sliding simulation ----
+        if state_key not in st.session_state:
+            st.session_state[state_key] = 0
 
-    window_df = df.iloc[start : start + WINDOW_SIZE]
-    forecast_df = df.iloc[start + WINDOW_SIZE : start + WINDOW_SIZE + FORECAST_HORIZON]
+        max_start = len(df) - (WINDOW_SIZE + FORECAST_HORIZON)
+        max_start = max(max_start, 0)
 
-    st.session_state[state_key] += 1
-    if st.session_state[state_key] > max_start:
-        st.session_state[state_key] = 0
+        start = min(st.session_state[state_key], max_start)
+
+        window_df = df.iloc[start : start + WINDOW_SIZE]
+        forecast_df = df.iloc[start + WINDOW_SIZE : start + WINDOW_SIZE + FORECAST_HORIZON]
+
+        st.session_state[state_key] += 1
+        if st.session_state[state_key] > max_start:
+            st.session_state[state_key] = 0
+
+    else:
+        # ---- Production mode ----
+        window_df = df.iloc[:WINDOW_SIZE]
+        forecast_df = df.iloc[WINDOW_SIZE:WINDOW_SIZE + FORECAST_HORIZON]
 
     return window_df, forecast_df
+
 
 # =====================================================
 # MAIN PAGE — LATEST VALUES + TRENDS
@@ -347,11 +370,11 @@ def get_sliding_window(df, state_key):
 if selected_page == "Main Page":
     st.title("🌊 Aquaponics System Overview")
 
-    for pond_name, csv_path in POND_FILES.items():
+    for pond_name, table_name in POND_FILES.items():
         st.markdown(f"## 🌱 {pond_name}")
 
-        df = get_data(csv_path, refresh_counter).sort_values("created_at").reset_index(drop=True)
-        window_df, forecast_df = get_sliding_window(df, f"main_{pond_name}_idx")
+        df = get_data(table_name, refresh_counter).sort_values("created_at").reset_index(drop=True)
+        window_df, forecast_df = get_window_data(df, f"main_{pond_name}_idx")
 
         latest = window_df.iloc[-1]
         future = forecast_df.iloc[-1]
@@ -384,6 +407,7 @@ if selected_page == "Main Page":
 
         st.markdown("---")
 
+
 # =====================================================
 # AGGREGATE OVERVIEW PAGE
 # =====================================================
@@ -391,11 +415,11 @@ elif selected_page == "Aggregate Overview":
     st.title("📊 Aggregate Sensor Overview (All Ponds)")
 
     pond_dfs = []
-    for name, path in POND_FILES.items():
-        df = get_data(path, refresh_counter).sort_values("created_at").reset_index(drop=True)
+    for name, table_name in POND_FILES.items():
+        df = get_data(table_name, refresh_counter).sort_values("created_at").reset_index(drop=True)
         pond_dfs.append(df)
 
-    base_df, _ = get_sliding_window(pond_dfs[0], "aggregate_idx")
+    base_df, _ = get_window_data(pond_dfs[0], "aggregate_idx")
     time_index = base_df["created_at"]
 
     for label, col in SENSORS.items():
@@ -438,6 +462,7 @@ elif selected_page == "Aggregate Overview":
 
         st.altair_chart((area + median_line).properties(height=320), use_container_width=True)
 
+
 # =====================================================
 # INDIVIDUAL POND PAGES
 # =====================================================
@@ -447,7 +472,7 @@ else:
     df = get_data(POND_FILES[selected_page], refresh_counter)\
             .sort_values("created_at").reset_index(drop=True)
 
-    window_df, forecast_df = get_sliding_window(df, f"{selected_page}_idx")
+    window_df, forecast_df = get_window_data(df, f"{selected_page}_idx")
     latest = window_df.iloc[-1]
 
     st.subheader("📊 Latest Readings")

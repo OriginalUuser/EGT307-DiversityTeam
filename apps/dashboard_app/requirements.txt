@@ -1,0 +1,6 @@
+streamlit==1.53.1
+streamlit-autorefresh==1.0.1
+pandas==2.3.3
+altair==6.0.0
+sqlalchemy==2.0.46
+psycopg2-binary==2.9.11
