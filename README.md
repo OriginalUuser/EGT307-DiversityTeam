@@ -61,6 +61,16 @@ In the base project directory:
 - Run `make db_cluster` if you want to build the database cluster
 - Run `make training_pipeline` if you want to build the training pipeline.
 
+Before building the training_pipeline, you want to set the credentials first. To do that:
+1. Create a .env file in the base directory
+2. Configure values for `DB_USERNAME` and `DB_PASSWORD`
+```.env
+# For example
+DB_USERNAME=admin
+DB_PASSWORD=password
+```
+3. Run `make k8s-secrets`
+
 
 # System Architecture
 
