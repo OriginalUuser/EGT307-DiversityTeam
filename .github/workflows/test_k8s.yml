@@ -21,7 +21,7 @@ jobs:
         run: kubectl get pods -A
 
       - name: Set up k8s cluster
-        run: bash ./setup_k8s_cluster
+        run: bash ./setup_k8s_cluster.sh
         env:
           POSTGRES_PASS: ${{ secrets.POSTGRES_PASS }}
 
@@ -46,6 +46,7 @@ jobs:
       - name: Testing monitoring deployment, send report generation request to API, send request to UI
         run: |
           kubectl wait --for=condition=Ready pod -l app=monitoring-app --namespace=monitoring-ns --timeout=240s
+          sleep 30
 
           # Open tunnel
           kubectl port-forward svc/monitoring-service 8001:8001 8000:8000 -n monitoring-ns &
@@ -65,4 +66,21 @@ jobs:
 
           # Evidently UI request, checks if the project was created successfully
           curl -o output.json http://127.0.0.1:8000/api/projects/search/Aquaponics%20Monitoring
+
+      - name: Testing ingestion deployment, send curl to API
+        run: |
+          kubectl wait --for=condition=Ready pod -l app=ingestion-app --namespace=ingestion-ns --timeout=240s
+
+          # Open tunnel
+          kubectl port-forward svc/ingestion-service 8002:81 -n ingestion-ns &
+          for i in {1..30}; do
+              if nc -z 127.0.0.1 8002; then
+                  echo "Tunnel is open!"
+                  break
+              fi
+              sleep 0.5
+          done
+
+          # Curl API to see if it exists
+          curl http://127.0.0.1:8002
       

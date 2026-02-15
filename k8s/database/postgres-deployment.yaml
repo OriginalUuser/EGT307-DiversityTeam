@@ -14,6 +14,8 @@ spec:
       owner: admin
       secret:
         name: postgres-credentials-admin
+      postInitSQL:
+        - ALTER USER admin CREATEDB;
   storage:
     pvcTemplate:
       accessModes:

@@ -1,0 +1,67 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: monitoring-scheduled-job
+  namespace: monitoring-ns
+spec:
+  schedule: "0 0 * * *" # Every night at midnight
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: job-launcher-sa
+          restartPolicy: OnFailure
+          containers:
+          - name: launcher
+            image: bitnami/kubectl:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              # Obtain completions from monitoring-job-config ConfigMap (And making sure its at least 1)
+              COUNT=$(kubectl get configmap monitoring-job-config -n monitoring-ns -o jsonpath='{.data.completion_count}')
+              if [ -z "$COUNT" ]; then COUNT=1; fi
+
+              # Obtain parallelism from monitoring-job-config ConfigMap (And making sure its at least 1)
+              PARALLELISM=$(kubectl get configmap monitoring-job-config -n monitoring-ns -o jsonpath='{.data.parallelism_count}')
+              if [ -z "$PARALLELISM" ]; then PARALLELISM=1; fi
+
+              JOB_NAME="scheduled-report-job-$(date +%s)"
+              echo "Launching Job $JOB_NAME with $COUNT completions..."
+
+              # Obtain tables, range, and columns from monitoring-job-config ConfigMap
+              TABLES=$(kubectl get configmap monitoring-job-config -n monitoring-ns -o jsonpath='{.data.tables}')
+              RANGE=$(kubectl get configmap monitoring-job-config -n monitoring-ns -o jsonpath='{.data.range}')
+              COLUMNS=$(kubectl get configmap monitoring-job-config -n monitoring-ns -o jsonpath='{.data.columns}')
+
+              # Obtain MONITORING_URL from ConfigMap
+              MONITORING_URL=$(kubectl get configmap monitoring-job-config -n monitoring-ns -o jsonpath='{.data.url}')
+
+              # Create the Indexed Job 
+              cat <<EOF | kubectl apply -f -
+              apiVersion: batch/v1
+              kind: Job
+              metadata:
+                name: $JOB_NAME
+                namespace: monitoring-ns
+              spec:
+                completions: $COUNT
+                parallelism: $PARALLELISM
+                completionMode: Indexed
+                template:
+                  spec:
+                    restartPolicy: Never
+                    containers:
+                    - name: worker
+                      image: docker.io/originaluuser/divteam_monitoring_cronjob:0.1
+                      command: ["sh", "-c", "echo Processing item \$JOB_COMPLETION_INDEX"]
+                      env:
+                      - name: TABLES
+                        value: $TABLES
+                      - name: RANGE
+                        value: $RANGE
+                      - name: COLUMNS
+                        value: $COLUMNS
+                      - name: MONITORING_URL
+                        value: $MONITORING_URL
+              EOF

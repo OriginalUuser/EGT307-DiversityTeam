@@ -1,0 +1,93 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ml-db-setup
+  namespace: ml-application-ns
+spec:
+  template:
+    spec:
+      containers:
+      - name: db-initializer
+        image: ${UPLOAD_INIT_WORKER}
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: db-username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: db-password
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: ml-config
+              key: db-host
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: ml-config
+              key: db-port
+        - name: SENSOR_DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: ml-config
+              key: sensor-db-name
+        - name: SENSOR_DATABASE_URL
+          value: "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(SENSOR_DB_NAME)"
+      restartPolicy: OnFailure
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: ml-periodic-trigger
+  namespace: ml-application-ns
+spec:
+  schedule: "*/10 * * * *" # Every h:n(10) minutes, where (-1>n>7 & n.dtype = int) && (-1>h>13 & h.dtype = int)
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: trigger
+            image: ${UPLOAD_TRAINING_WORKER}
+            command: ["python", "training_scheduler.py"]
+            env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: db-username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-credentials
+                  key: db-password
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: ml-config
+                  key: db-host
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: ml-config
+                  key: db-port
+            - name: SENSOR_DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: ml-config
+                  key: sensor-db-name
+            - name: ML_DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: ml-config
+                  key: ml-db-name
+            - name: SENSOR_DATABASE_URL
+              value: "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(SENSOR_DB_NAME)"
+            - name: ML_DATABASE_URL
+              value: "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(ML_DB_NAME)"
+          restartPolicy: OnFailure

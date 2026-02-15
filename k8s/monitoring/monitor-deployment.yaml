@@ -22,7 +22,7 @@ spec:
 
       containers:
       - name: monitoring-frontend
-        image: docker.io/originaluuser/divteam_monitoring_frontend:1.3
+        image: docker.io/originaluuser/divteam_monitoring_frontend:1.6
         command: ["/bin/sh", "-c"]
         args:
         - >-
@@ -48,7 +48,7 @@ spec:
                 key: WORKSPACE_DIR
         
       - name: monitoring-backend
-        image: docker.io/originaluuser/divteam_monitoring_backend:1.5
+        image: docker.io/originaluuser/divteam_monitoring_backend:1.6
         resources:
           limits:
             memory: "512Mi"
