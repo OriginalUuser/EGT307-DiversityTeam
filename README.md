@@ -50,6 +50,18 @@ Congratulations, you have started the kubernetes database cluster!!!
 
 Check `test\database.ipynb` for how to access and use the database locally or within the cluster.
 
+---
+
+Alternatively, you can use the Makefile build the pipelines.
+
+In the base project directory:
+- Run `make` to build the project
+- Run `make clean` to gracefully clean kubernetes resources
+- Run `make rebuild` if you want to clean the resource before building
+- Run `make db_cluster` if you want to build the database cluster
+- Run `make training_pipeline` if you want to build the training pipeline.
+
+
 # System Architecture
 
 ## Microservice 1
