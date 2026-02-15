@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard-deploy
+  namespace: dashboard-ns
+  labels:
+    app: dashboard-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dashboard-app
+  template:
+    metadata:
+      labels:
+        app: dashboard-app
+    spec:
+      containers:
+      - name: dashboard-pipeline
+        image: docker.io/crapulous/main_repo:7
+        command: ["streamlit", "run", "src/dashboard.py", "--server.port=8080", "--server.address=0.0.0.0", "--server.baseUrlPath=dashboard", "--server.headless=true", "--browser.gatherUsageStats=false"]
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+          requests:
+            memory: "256Mi"
+            cpu: "50m"
+        ports:
+        - containerPort: 8080
+        env:
+          - name: DATABASE_DNS
+            valueFrom:
+              configMapKeyRef:
+                name: dashboard-config
+                key: DATABASE_DNS
+          - name: DATABASE_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: dashboard-config
+                key: DATABASE_PORT
+          - name: POSTGRES_PASS
+            valueFrom:
+              secretKeyRef:
+                name: mirror-postgres-credentials-admin
+                key: password
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: dashboard-service
+  namespace: dashboard-ns
+spec:
+  selector:
+    app: dashboard-app
+  ports:
+  - name: dashboard-frontend-port
+    port: 8081
+    targetPort: 8080
+    protocol: TCP
+
+# ---
+
+# apiVersion: autoscaling/v2
+# kind: HorizontalPodAutoscaler
+# metadata:
+#   name: ingestion-app-hpa
+#   namespace: ingestion-ns
+# spec:
+#   scaleTargetRef:
+#     apiVersion: apps/v1
+#     kind: Deployment
+#     name: ingestion-deploy
+#   minReplicas: 1
+#   maxReplicas: 5
+#   metrics:
+#   - type: Resource
+#     resource:
+#       name: cpu
+#       target:
+#         type: Utilization
+#         averageUtilization: 75
