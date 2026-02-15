@@ -46,6 +46,7 @@ jobs:
       - name: Testing monitoring deployment, send report generation request to API, send request to UI
         run: |
           kubectl wait --for=condition=Ready pod -l app=monitoring-app --namespace=monitoring-ns --timeout=240s
+          sleep 30
 
           # Open tunnel
           kubectl port-forward svc/monitoring-service 8001:8001 8000:8000 -n monitoring-ns &
