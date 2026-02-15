@@ -1,0 +1,17 @@
+FROM python:3.12-slim-bookworm
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+WORKDIR /app
+
+COPY pyproject.toml uv.lock ./
+
+RUN uv sync --frozen --no-install-project --no-dev
+
+ENV PATH="/app/.venv/bin:$PATH"
+
+COPY model_trainer.py training_scheduler.py api_schema.py db_schema.sql ./
+
+ENV PYTHONPATH="."
+
+CMD ["procrastinate", "--app=model_trainer.app", "worker"]
