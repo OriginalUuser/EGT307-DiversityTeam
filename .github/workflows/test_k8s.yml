@@ -21,7 +21,7 @@ jobs:
         run: kubectl get pods -A
 
       - name: Set up k8s cluster
-        run: bash ./setup_k8s_cluster
+        run: bash ./setup_k8s_cluster.sh
         env:
           POSTGRES_PASS: ${{ secrets.POSTGRES_PASS }}
 
