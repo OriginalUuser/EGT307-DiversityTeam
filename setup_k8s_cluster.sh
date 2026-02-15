@@ -13,4 +13,7 @@ bash ./scripts/monitoring_k8s_setup.sh
 # Startup Ingestion Application
 bash ./scripts/ingestion_k8s_setup.sh
 
+# Startup Dashboard Application
+bash ./scripts/dashboard_k8s_setup.sh
+
 echo "Finished setting up k8s cluster"
