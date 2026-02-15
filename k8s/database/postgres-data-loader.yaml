@@ -9,6 +9,7 @@ spec:
       containers:
       - name: loader
         image: ${UPLOAD_DATA_WORKER}
+        command: ["/bin/bash", "./scripts/dataset_download.sh"]
         env:
         - name: DB_USER
           valueFrom:
@@ -35,7 +36,5 @@ spec:
             configMapKeyRef:
               name: db-config
               key: db-name
-        - name: DATABASE_URL
-          value: "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)"
       restartPolicy: OnFailure
   backoffLimit: 0
