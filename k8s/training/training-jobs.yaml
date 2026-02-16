@@ -11,33 +11,31 @@ spec:
         image: ${UPLOAD_INIT_WORKER}
         imagePullPolicy: IfNotPresent
         env:
-        - name: DB_USER
+        - name: ML_DB_USER
           valueFrom:
             secretKeyRef:
-              name: db-credentials
-              key: db-username
-        - name: DB_PASSWORD
+              name: mirror-postgres-credentials-ml-admin
+              key: username
+        - name: ML_DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: db-credentials
-              key: db-password
-        - name: DB_HOST
+              name: mirror-postgres-credentials-ml-admin
+              key: password
+        - name: ML_DB_HOST
           valueFrom:
             configMapKeyRef:
               name: ml-config
-              key: db-host
+              key: ml-db-host
+        - name: ML_DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: ml-config
+              key: ml-db-name
         - name: DB_PORT
           valueFrom:
             configMapKeyRef:
               name: ml-config
               key: db-port
-        - name: SENSOR_DB_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: ml-config
-              key: sensor-db-name
-        - name: SENSOR_DATABASE_URL
-          value: "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(SENSOR_DB_NAME)"
       restartPolicy: OnFailure
 ---
 apiVersion: batch/v1
@@ -56,31 +54,36 @@ spec:
             image: ${UPLOAD_TRAINING_WORKER}
             command: ["python", "training_scheduler.py"]
             env:
-            - name: POSTGRES_USER
+            - name: SENSOR_DB_USER
               valueFrom:
                 secretKeyRef:
                   name: mirror-postgres-credentials-admin
                   key: username
-            - name: POSTGRES_PASSWORD
+            - name: SENSOR_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: mirror-postgres-credentials-admin
                   key: password
-            - name: DB_PASSWORD
+            - name: ML_DB_USER
               valueFrom:
                 secretKeyRef:
-                  name: db-credentials
-                  key: db-password
-            - name: DB_HOST
+                  name: mirror-postgres-credentials-ml-admin
+                  key: username
+            - name: ML_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mirror-postgres-credentials-ml-admin
+                  key: password
+            - name: SENSOR_DB_HOST
               valueFrom:
                 configMapKeyRef:
                   name: ml-config
-                  key: db-host
-            - name: DB_PORT
+                  key: sensor-db-host
+            - name: ML_DB_HOST
               valueFrom:
                 configMapKeyRef:
                   name: ml-config
-                  key: db-port
+                  key: ml-db-host
             - name: SENSOR_DB_NAME
               valueFrom:
                 configMapKeyRef:
@@ -91,4 +94,9 @@ spec:
                 configMapKeyRef:
                   name: ml-config
                   key: ml-db-name
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: ml-config
+                  key: db-port
           restartPolicy: OnFailure

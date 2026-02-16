@@ -4,8 +4,9 @@ metadata:
   name: ml-config
   namespace: ml-application-ns
 data:
-  db-host: "sensor-db-ha-rw.database-ns"
-  db-port: "5432"
+  sensor-db-host: "sensor-db-ha-rw.database-ns"
+  ml-db-host: "ml-artifacts-db-rw.ml-artifacts-db-ns"
   sensor-db-name: "sensor-db"
   ml-db-name: "ml_artifacts"
+  db-port: "5432"
   rows-limit: "5000"

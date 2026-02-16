@@ -18,26 +18,36 @@ spec:
         image: ${UPLOAD_TRAINING_WORKER}
         imagePullPolicy: IfNotPresent
         env:
-        - name: DB_USER
+        - name: SENSOR_DB_USER
           valueFrom:
             secretKeyRef:
-              name: db-credentials
-              key: db-username
-        - name: DB_PASSWORD
+              name: mirror-postgres-credentials-admin
+              key: username
+        - name: SENSOR_DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: db-credentials
-              key: db-password
-        - name: DB_HOST
+              name: mirror-postgres-credentials-admin
+              key: password
+        - name: ML_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: mirror-postgres-credentials-ml-admin
+              key: username
+        - name: ML_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mirror-postgres-credentials-ml-admin
+              key: password
+        - name: SENSOR_DB_HOST
           valueFrom:
             configMapKeyRef:
               name: ml-config
-              key: db-host
-        - name: DB_PORT
+              key: sensor-db-host
+        - name: ML_DB_HOST
           valueFrom:
             configMapKeyRef:
               name: ml-config
-              key: db-port
+              key: ml-db-host
         - name: SENSOR_DB_NAME
           valueFrom:
             configMapKeyRef:
@@ -48,12 +58,11 @@ spec:
             configMapKeyRef:
               name: ml-config
               key: ml-db-name
-        - name: SENSOR_DATABASE_URL
-          value: "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(SENSOR_DB_NAME)"
-        - name: ML_DATABASE_URL
-          value: "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(ML_DB_NAME)"
-        - name: PYTHONPATH
-          value: "."
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: ml-config
+              key: db-port
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -78,26 +87,36 @@ spec:
         ports:
         - containerPort: 8000
         env:
-        - name: DB_USER
+        - name: SENSOR_DB_USER
           valueFrom:
             secretKeyRef:
-              name: db-credentials
-              key: db-username
-        - name: DB_PASSWORD
+              name: mirror-postgres-credentials-admin
+              key: username
+        - name: SENSOR_DB_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: db-credentials
-              key: db-password
-        - name: DB_HOST
+              name: mirror-postgres-credentials-admin
+              key: password
+        - name: ML_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: mirror-postgres-credentials-ml-admin
+              key: username
+        - name: ML_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mirror-postgres-credentials-ml-admin
+              key: password
+        - name: SENSOR_DB_HOST
           valueFrom:
             configMapKeyRef:
               name: ml-config
-              key: db-host
-        - name: DB_PORT
+              key: sensor-db-host
+        - name: ML_DB_HOST
           valueFrom:
             configMapKeyRef:
               name: ml-config
-              key: db-port
+              key: ml-db-host
         - name: SENSOR_DB_NAME
           valueFrom:
             configMapKeyRef:
@@ -108,12 +127,11 @@ spec:
             configMapKeyRef:
               name: ml-config
               key: ml-db-name
-        - name: SENSOR_DATABASE_URL
-          value: "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(SENSOR_DB_NAME)"
-        - name: ML_DATABASE_URL
-          value: "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(ML_DB_NAME)"
-        - name: PYTHONPATH
-          value: "."
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: ml-config
+              key: db-port
 ---
 apiVersion: v1
 kind: Service

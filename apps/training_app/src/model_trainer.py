@@ -2,7 +2,6 @@ import os
 import json
 import pandas as pd
 import numpy as np
-import io
 import tempfile
 
 from sqlalchemy import create_engine, text
@@ -20,8 +19,27 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-SENSOR_DB_URI = os.getenv("SENSOR_DATABASE_URL")
-ML_DB_URI = os.getenv("ML_DATABASE_URL")
+# Database Credentials
+SENSOR_DB_USER = os.environ.get('SENSOR_DB_USER')
+SENSOR_DB_PASSWORD = os.environ.get('SENSOR_DB_PASSWORD')
+
+ML_DB_USER = os.environ.get('ML_DB_USER')
+ML_DB_PASSWORD = os.environ.get('ML_DB_PASSWORD')
+
+# Database Connection Details
+SENSOR_DB_HOST = os.environ.get('SENSOR_DB_HOST')
+ML_DB_HOST = os.environ.get('ML_DB_HOST')
+
+# Database port
+DB_PORT = os.environ.get('DB_PORT')
+
+# Database names
+SENSOR_DB_NAME = os.environ.get('SENSOR_DB_NAME')
+ML_DB_NAME = os.environ.get('ML_DB_NAME')
+
+# Database URIs
+SENSOR_DB_URI = f"postgresql://{SENSOR_DB_USER}:{SENSOR_DB_PASSWORD}@{SENSOR_DB_HOST}:{DB_PORT}/{SENSOR_DB_NAME}"
+ML_DB_URI = f"postgresql://{ML_DB_USER}:{ML_DB_PASSWORD}@{ML_DB_HOST}:{DB_PORT}/{ML_DB_NAME}"
 
 sensor_engine = create_engine(SENSOR_DB_URI)
 ml_artifact_engine = create_engine(ML_DB_URI)
@@ -129,7 +147,7 @@ async def train_model_sql(
                     "bid": batch_id,
                     "src": table_name,
                     "tgt": target_col,
-                    "lim": rows_limit, # Updated to use the variable
+                    "lim": rows_limit,
                     "ts": t_start,
                     "te": t_end,
                     "w": json.dumps(weights),

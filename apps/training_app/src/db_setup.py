@@ -11,26 +11,28 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-SENSOR_DB_URI = os.getenv("SENSOR_DATABASE_URL")
+# Database Credentials
+ML_DB_USER = os.environ.get('ML_DB_USER')
+ML_DB_PASSWORD = os.environ.get('ML_DB_PASSWORD')
+
+# Database Connection Details
+ML_DB_HOST = os.environ.get('ML_DB_HOST')
+
+# Database port
+DB_PORT = os.environ.get('DB_PORT')
+
+# Database name
+ML_DB_NAME = os.environ.get('ML_DB_NAME')
+
+# Database URIs
+ML_DB_URI = f"postgresql://{ML_DB_USER}:{ML_DB_PASSWORD}@{ML_DB_HOST}:{DB_PORT}/{ML_DB_NAME}"
 
 def run_setup():
-    new_db_name = "ml_artifacts"
-
-    conn = psycopg2.connect(SENSOR_DB_URI)
-    conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-    with conn.cursor() as cur:
-        cur.execute("SELECT 1 FROM pg_database WHERE datname = %s", (new_db_name,))
-        if not cur.fetchone():
-            cur.execute(f"CREATE DATABASE {new_db_name}")
-            logger.info(f"Created database: {new_db_name}")
-    conn.close()
-
-    artifact_db_url = SENSOR_DB_URI.rsplit('/', 1)[0] + f"/{new_db_name}"
-    connector = PsycopgConnector(conninfo=artifact_db_url)
+    connector = PsycopgConnector(conninfo=ML_DB_URI)
     app = App(connector=connector)
 
     with app.open():
-        with psycopg2.connect(artifact_db_url) as conn:
+        with psycopg2.connect(ML_DB_URI) as conn:
             with conn.cursor() as cur:
                 cur.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'procrastinate_jobs');")
                 schema_exists = cur.fetchone()[0]
@@ -41,7 +43,7 @@ def run_setup():
         else:
             logger.info("Skipping application of Procastinate schema; Procrastinate schema already exists")
 
-    with psycopg2.connect(artifact_db_url) as conn:
+    with psycopg2.connect(ML_DB_URI) as conn:
         with conn.cursor() as cur:
             with open('db_schema.sql', 'r') as f:
                 cur.execute(f.read())
