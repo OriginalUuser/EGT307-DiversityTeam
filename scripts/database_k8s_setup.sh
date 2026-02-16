@@ -7,15 +7,26 @@ if minikube status | grep -q "host: Running"; then
     kubectl wait --for=condition=available deployment/cnpg-controller-manager -n cnpg-system --timeout=120s
     kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=cloudnative-pg -n cnpg-system --timeout=120s
 
-    # Setup namespace
-    kubectl apply -f ./k8s/database/postgres-namespace.yaml
+    # Setup namespace: database-ns
+    kubectl apply -f ./k8s/database/sensor-database/postgres-namespace.yaml
 
     # Setup secrets
-    envsubst < ./k8s/database/postgres-credentials.yaml | kubectl apply -f -
+    envsubst < ./k8s/database/sensor-database/postgres-credentials.yaml | kubectl apply -f -
 
     # Start CloudNativePG Cluster postgresql db
-    kubectl apply -f ./k8s/database/postgres-storage.yaml
-    kubectl apply -f ./k8s/database/postgres-deployment.yaml
+    kubectl apply -f ./k8s/database/sensor-database/postgres-storage.yaml
+    kubectl apply -f ./k8s/database/sensor-database/postgres-deployment.yaml
+
+    # Setup namespace: ml-artifacts-db-ns
+    kubectl apply -f ./k8s/database/ml-artifacts-database/postgres-namespace.yaml
+
+    # Setup secrets
+    envsubst < ./k8s/database/ml-artifacts-database/postgres-credentials.yaml | kubectl apply -f -
+
+    # Start CloudNativePG Cluster postgresql db
+    kubectl apply -f ./k8s/database/ml-artifacts-database/postgres-storage.yaml
+    kubectl apply -f ./k8s/database/ml-artifacts-database/postgres-deployment.yaml
+
 else
     echo "Minikube is not running. Aborting script execution."
     exit 1
