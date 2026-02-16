@@ -104,8 +104,8 @@ ipython_config.py
 #   Similar to Pipfile.lock, it is generally recommended to include uv.lock in version control.
 #   This is especially recommended for binary packages to ensure reproducibility, and is more
 #   commonly ignored for libraries.
-uv.lock
-pyproject.toml
+# uv.lock
+# pyproject.toml
 .python-version
 main.py
 
