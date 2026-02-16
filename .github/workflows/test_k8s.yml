@@ -29,17 +29,7 @@ jobs:
         run: |
           kubectl wait --for=condition=Ready cluster/sensor-db-ha --namespace=database-ns --timeout=240s
 
-          # Open tunnel
-          kubectl port-forward svc/sensor-db-ha-rw 5432:5432 -n database-ns &
-          for i in {1..30}; do
-              if nc -z 127.0.0.1 5432; then
-                  echo "Tunnel is open!"
-                  break
-              fi
-              sleep 0.5
-          done
-
-          bash ./scripts/dataset_download.sh
+          bash ./scripts/database_run_upload.sh
         env:
           POSTGRES_PASS: ${{ secrets.POSTGRES_PASS }}
 
