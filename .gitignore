@@ -107,6 +107,7 @@ ipython_config.py
 uv.lock
 pyproject.toml
 .python-version
+main.py
 
 # poetry
 #   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
