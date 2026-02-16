@@ -8,20 +8,12 @@ metadata:
 spec:
   instances: 3
   imageName: ghcr.io/cloudnative-pg/postgresql:18.0
-  managed:
-    roles:
-      - name: ml_user
-        login: true
-        passwordSecret:
-          name: ml-user-credentials
   bootstrap:
     initdb:
       database: sensor-db
       owner: admin
       secret:
         name: postgres-credentials-admin
-      postInitSQL:
-        - CREATE DATABASE ml_artifacts OWNER ml_user;
   storage:
     pvcTemplate:
       accessModes:
