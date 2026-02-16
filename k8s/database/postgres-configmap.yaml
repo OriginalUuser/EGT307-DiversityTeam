@@ -6,4 +6,4 @@ metadata:
 data:
   db-port: "5432"
   db-name: "sensor-db"
-  db-host: "sensor-db-ha-rw"
+  db-host: "sensor-db-ha-rw.database-ns"
