@@ -56,11 +56,16 @@ spec:
             image: ${UPLOAD_TRAINING_WORKER}
             command: ["python", "training_scheduler.py"]
             env:
-            - name: DB_USER
+            - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: db-credentials
-                  key: db-username
+                  name: mirror-postgres-credentials-admin
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mirror-postgres-credentials-admin
+                  key: password
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -86,8 +91,4 @@ spec:
                 configMapKeyRef:
                   name: ml-config
                   key: ml-db-name
-            - name: SENSOR_DATABASE_URL
-              value: "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(SENSOR_DB_NAME)"
-            - name: ML_DATABASE_URL
-              value: "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(ML_DB_NAME)"
           restartPolicy: OnFailure

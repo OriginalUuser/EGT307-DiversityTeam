@@ -1,0 +1,25 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: ml-artifacts-db
+  namespace: ml-artifacts-db-ns
+  labels:
+    app: ml-artifacts-db-app
+spec:
+  instances: 3
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.0
+  bootstrap:
+    initdb:
+      database: ml-artifacts
+      owner: ml_admin
+      secret:
+        name: postgres-credentials-ml-admin
+  storage:
+    pvcTemplate:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
+      storageClassName: ml-postgres-local-disk
+      volumeMode: Filesystem
