@@ -49,6 +49,8 @@ spec:
         
       - name: monitoring-backend
         image: docker.io/originaluuser/divteam_monitoring_backend:1.6
+        command: [ "uvicorn" ]
+        args: [ "src.app:app", "--host", "0.0.0.0", "--port", "8001" ]
         resources:
           limits:
             memory: "512Mi"
