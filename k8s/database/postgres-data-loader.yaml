@@ -8,7 +8,7 @@ spec:
     spec:
       containers:
       - name: loader
-        image: ${UPLOAD_DATA_WORKER}
+        image: docker.io/originaluuser/divteam_database_upload:0.1
         command: ["/bin/bash", "./scripts/dataset_download.sh"]
         env:
         - name: DB_USER
