@@ -25,13 +25,32 @@ jobs:
         env:
           POSTGRES_PASS: ${{ secrets.POSTGRES_PASS }}
 
-      - name: Testing database cluster, uploading CSV data to database cluster
+      - name: Uploading CSV data to database cluster
         run: |
           kubectl wait --for=condition=Ready cluster/sensor-db-ha --namespace=database-ns --timeout=240s
-
           bash ./scripts/database_run_upload.sh
-        env:
-          POSTGRES_PASS: ${{ secrets.POSTGRES_PASS }}
+          sleep 60
+
+          # Open tunnel
+          kubectl port-forward svc/sensor-db-ha-rw 5432:5432 -n database-ns &
+          for i in {1..30}; do
+              if nc -z 127.0.0.1 5432; then
+                  echo "Tunnel is open!"
+                  break
+              fi
+              sleep 0.5
+          done
+
+      - name: Testing database cluster, uploading CSV data to database cluster
+        uses: cuchi/actions-query-to-postgresql@v1.0.0
+        with:
+          query: "SELECT * FROM iot_pond_1 LIMIT 10"
+          host: 127.0.0.1
+          port: 5432
+          username: ${{ secrets.POSTGRES_USER }}
+          password: ${{ secrets.POSTGRES_PASS }}
+          db: ${{ secrets.SENSOR_DB_NAME }}
+          ssl: 'false'
 
       - name: Testing monitoring deployment, send report generation request to API, send request to UI
         run: |
