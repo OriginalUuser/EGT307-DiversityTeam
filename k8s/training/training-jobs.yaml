@@ -10,7 +10,7 @@ spec:
     spec:
       containers:
       - name: db-initializer
-        image: 6zekiel/upload_data:v1
+        image: 6zekiel/init-ml-db:latest
         imagePullPolicy: IfNotPresent
         env:
         - name: ML_DB_USER
