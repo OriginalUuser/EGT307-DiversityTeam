@@ -12,6 +12,7 @@ INDEX = os.getenv("JOB_COMPLETION_INDEX")
 TABLES = TABLES.split(",")
 COLUMNS = COLUMNS.split(",")
 RANGE = int(RANGE)
+INDEX = int(INDEX)
 
 # Send request to...
 MONITORING_URL = os.getenv("MONITORING_URL")
