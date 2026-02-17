@@ -49,3 +49,21 @@ spec:
   - group: "" 
     kind: Service
     name: dashboard-service
+
+# ---
+
+# # ReferenceGrant nginx-gateway HTTPRoute -> headlamp service in headlamp-ns
+# apiVersion: gateway.networking.k8s.io/v1beta1
+# kind: ReferenceGrant
+# metadata:
+#   name: access-headlamp-ns
+#   namespace: headlamp-ns
+# spec:
+#   from:
+#   - group: gateway.networking.k8s.io
+#     kind: HTTPRoute
+#     namespace: nginx-gateway
+#   to:
+#   - group: "" 
+#     kind: Service
+#     name: headlamp

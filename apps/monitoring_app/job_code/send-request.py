@@ -12,9 +12,12 @@ INDEX = os.getenv("JOB_COMPLETION_INDEX")
 TABLES = TABLES.split(",")
 COLUMNS = COLUMNS.split(",")
 RANGE = int(RANGE)
+INDEX = int(INDEX)
 
 # Send request to...
-MONITORING_URL = os.getenv("MONITORING_URL")
+MONITORING_DNS = os.getenv("MONITORING_DNS")
+MONITORING_PORT = os.getenv("MONITORING_PORT")
+MONITORING_URL = f"http://{MONITORING_DNS}:{MONITORING_PORT}"
 
 # Send the request
 assert INDEX <= len(TABLES)
