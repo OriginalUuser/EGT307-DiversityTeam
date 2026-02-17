@@ -49,7 +49,7 @@ metadata:
   labels:
     component: ml-cronjob-initializer
 spec:
-  schedule: "*/10 * * * *" # Every h:n(10) minutes, where (-1>n>7 & n.dtype = int) && (-1>h>13 & h.dtype = int)
+  schedule: "*/20 * * * *" # Every h:n(10) minutes, where (-1>n>7 & n.dtype = int) && (-1>h>13 & h.dtype = int)
   jobTemplate:
     spec:
       template:
