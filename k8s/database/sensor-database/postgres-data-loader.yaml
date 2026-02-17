@@ -8,7 +8,7 @@ spec:
     spec:
       containers:
       - name: loader
-        image: docker.io/originaluuser/divteam_database_upload:0.1
+        image: docker.io/originaluuser/divteam_database_upload:0.3
         command: ["/bin/bash", "./scripts/dataset_download.sh"]
         env:
         - name: DB_USER
@@ -36,5 +36,5 @@ spec:
             configMapKeyRef:
               name: db-config
               key: db-name
-      restartPolicy: OnFailure
-  backoffLimit: 0
+      restartPolicy: Never
+  backoffLimit: 1
