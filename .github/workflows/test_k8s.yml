@@ -16,6 +16,9 @@ jobs:
 
       - name: Set up minikube
         uses: medyagh/setup-minikube@latest
+        with:
+          cpus: "max"
+          memory: "max"
 
       - name: Verify cluster setup correctly
         run: kubectl get pods -A
