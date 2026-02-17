@@ -29,7 +29,7 @@ jobs:
         run: |
           kubectl wait --for=condition=Ready cluster/sensor-db-ha --namespace=database-ns --timeout=240s
           bash ./scripts/database_run_upload.sh
-          sleep 60
+          sleep 240
 
           # Open tunnel
           kubectl port-forward svc/sensor-db-ha-rw 5432:5432 -n database-ns &
