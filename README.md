@@ -52,25 +52,39 @@ Check `test\database.ipynb` for how to access and use the database locally or wi
 
 ---
 
-Alternatively, you can use the Makefile build the pipelines.
+## Using Makefile to build the application
 
-In the base project directory:
-- Run `make` to build the project
-- Run `make clean` to gracefully clean kubernetes resources
-- Run `make rebuild` if you want to clean the resource before building
-- Run `make db_cluster` if you want to build the database cluster
-- Run `make training_pipeline` if you want to build the training pipeline.
+You can use the `Makefile` build the pipelines. Ensure you have docker.service daemon running.
 
-Before building the training_pipeline, you want to set the credentials first. To do that:
-1. Create a .env file in the base directory
-2. Configure values for `DB_USERNAME` and `DB_PASSWORD`
+### Linux (debian based distros)
+
+1. Run `sudo apt install build-essential`
+2. Create a `.env` file in the base directory
+3. Fill in values for `POSTGRES_PASS` and `ML_POSTGRES_PASS`
 ```.env
-# For example
-DB_USERNAME=admin
-DB_PASSWORD=password
+# Example
+POSTGRES_PASS=password
+ML_POSTGRES_PASS=password
 ```
-3. Run `make k8s-secrets`
+4. Run `make` in the base directory
 
+### MacOS
+
+1. Run `xcode-select --install`
+2. Create a `.env` file in the base directory
+3. Fill in values for `POSTGRES_PASS` and `ML_POSTGRES_PASS`
+```.env
+# Example
+POSTGRES_PASS=password
+ML_POSTGRES_PASS=password
+```
+4. Run `make` in the base directory
+
+---
+
+### REGARDING MODEL INFERENCE
+
+Refer to [model_inference_example.ipynb](test/model_inference_example.ipynb) on how to use the model for inference.
 
 # System Architecture
 

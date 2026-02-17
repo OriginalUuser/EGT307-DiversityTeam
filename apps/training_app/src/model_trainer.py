@@ -81,7 +81,7 @@ async def train_model_sql(
         df['created_at'] = pd.to_datetime(df['created_at'])
         df.set_index('created_at', inplace=True)
 
-        df = df[[target_col]].resample('1H').mean().ffill()
+        df = df[[target_col]].resample('1h').mean().ffill()
         df.dropna(inplace=True)
         
         t_start = df.index.min().isoformat()
