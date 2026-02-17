@@ -77,13 +77,19 @@ async def train_model_sql(
         if df.empty:
             logger.warning(f"No data found for {table_name}. Skipping training.")
             return
+
+        df['created_at'] = pd.to_datetime(df['created_at'])
+        df.set_index('created_at', inplace=True)
+
+        df = df[[target_col]].resample('1H').mean().ffill()
+        df.dropna(inplace=True)
         
-        t_start = df['created_at'].min().isoformat()
-        t_end = df['created_at'].max().isoformat()
+        t_start = df.index.min().isoformat()
+        t_end = df.index.max().isoformat()
         logger.info(f"Data loaded: {len(df)} rows found spanning {t_start} to {t_end}")
 
         scaler = MinMaxScaler(feature_range=(0, 1))
-        scaled_data = scaler.fit_transform(df[target_col].values.reshape(-1, 1))
+        scaled_data = scaler.fit_transform(df.values.reshape(-1, 1))
 
         if len(scaled_data) <= window_size:
             logger.warning(f"Not enough data points ({len(scaled_data)}) for window size {window_size}.")

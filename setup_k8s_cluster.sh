@@ -8,6 +8,9 @@ kubectl wait --for=condition=available deployment.apps/reflector -n kube-system 
 # Startup all Database Clusters
 bash ./scripts/database_k8s_setup.sh
 
+# Upload data to Database Clusters
+bash ./scripts/database_run_upload.sh
+
 # Startup Monitoring Application
 bash ./scripts/monitoring_k8s_setup.sh
 
