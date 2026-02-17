@@ -16,11 +16,14 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: monitoring-job-config
-  namespace: monitoring-ns
+  namespace: monitoring-job-ns
 data:
-  completion_count: "11"
+  # Completion count should be the same as the 
+  completion_count: "9"
   parallelism_count: "4"
-  tables: "iot_pond_1,iot_pond_2,iot_pond_3,iot_pond_4,iot_pond_6,iot_pond_7,iot_pond_8,iot_pond_9,iot_pond_10,iot_pond_11,iot_pond_12"
+  # iot_pond_7,iot_pond_8,iot_pond_9 are excluded since the test dataset contains fully empty columns
+  tables: "iot_pond_1,iot_pond_2,iot_pond_3,iot_pond_4,iot_pond_6,iot_pond_10,iot_pond_11,iot_pond_12"  
   range: "10000"
   columns: "temperature,turbidity,dissolved_oxygen,ph,ammonia,nitrate,population,fish_length,fish_weight"
-  url: "monitoring-service:8001"
+  dns: "monitoring-service.monitoring-ns"
+  port: "8001"
