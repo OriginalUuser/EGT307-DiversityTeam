@@ -3,7 +3,7 @@
 # Setup
 minikube addons enable metrics-server
 kubectl -n kube-system apply -f https://github.com/emberstack/kubernetes-reflector/releases/latest/download/reflector.yaml
-kubectl wait --for=condition=Ready pods -l app.kubernetes.io/name=reflector -n kube-system --timeout=120s
+kubectl wait --for=condition=available deployment.apps/reflector -n kube-system --timeout=120s
 
 # Startup all Database Clusters
 bash ./scripts/database_k8s_setup.sh
