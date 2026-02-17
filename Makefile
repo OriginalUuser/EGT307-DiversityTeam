@@ -15,8 +15,8 @@ TRAINING_INIT_IMG := dvs/ml-db-init:v1
 TRAINING_WORKER_IMG := dvs/ml-trainer-worker:v1
 
 # Encrypt .env variables to generate kubernetes secrets
-include .env
-export $(shell sed 's/=.*//' .env)
+# include .env
+# export $(shell sed 's/=.*//' .env)
 
 # Pipelines!
 db_cluster: setup-db upload-data
@@ -26,13 +26,6 @@ rebuild: clean all
 
 # We do this to minimize latency by preventing copying the entire image to minikube
 DOCKER_BUILD = eval $$(minikube docker-env) && docker build
-
-# Verify credentials to access database
-k8s-secrets:
-	@USERNAME_B64=$$(echo -n $(DB_USERNAME) | base64) \
-	PASSWORD_B64=$$(echo -n $(DB_PASSWORD) | base64) \
-	envsubst '$$USERNAME_B64 $$PASSWORD_B64' < $(TRAINING_K8S_PATH)/training-credentials.template > $(TRAINING_K8S_PATH)/training-credentials.yaml
-	@echo "Credentials generated from .env! >//<"
 
 # Setup: Database Cluster
 setup-db:
@@ -74,12 +67,17 @@ deploy-training-pods:
 
 # Tools for convenience
 clean:
-	@echo "Cleaning up Kubernetes resources!"
+	@echo "Cleaning up Kubernetes resources!" --ignore-not-found
+	-kubectl delete namespace ml-artifacts-db-ns database-ns
+	-kubectl delete pv --all
+	-kubectl get pv
+	-kubectl delete storageclass postgres-local-disk ml-postgres-local-disk --ignore-not-found
+	-kubectl delete namespace ml-artifacts-db-ns
+	-kubectl delete cluster ml-artifacts-db -n ml-artifacts-db-ns --ignore-not-found
+	-kubectl delete pvc --all -n ml-artifacts-db-ns --ignore-not-found
+	-kubectl delete -f https://raw.githubusercontent.com/cloudnative-pg/cloudnative-pg/release-1.28/releases/cnpg-1.28.0.yaml
 	-kubectl delete cluster sensor-db-ha -n $(DB_NAMESPACE) --ignore-not-found
 	-kubectl delete pvc --all -n $(DB_NAMESPACE) --ignore-not-found
 	-kubectl delete pvc --all -n $(TRAINING_NAMESPACE) --ignore-not-found
 	-kubectl delete namespace $(DB_NAMESPACE) $(TRAINING_NAMESPACE) --ignore-not-found
-	-kubectl delete pv --all --wait=false
-	@echo "Removing Docker and Minikube images!"
-	-eval $$(minikube docker-env) && docker rmi $(DATABASE_UPLOAD_IMG) $(TRAINING_INIT_IMG) $(TRAINING_WORKER_IMG) 2>/dev/null || true
 	@echo "Cleanup complete! >_<"

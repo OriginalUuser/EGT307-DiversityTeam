@@ -1,0 +1,11 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: headlamp-cluster-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: headlamp-serviceaccount
+  namespace: headlamp-ns
+roleRef:
+  kind: ClusterRole
+  name: headlamp-cluster-role

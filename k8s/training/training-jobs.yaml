@@ -3,12 +3,14 @@ kind: Job
 metadata:
   name: ml-db-setup
   namespace: ml-application-ns
+  labels:
+    component: ml-db-schema-initializer
 spec:
   template:
     spec:
       containers:
       - name: db-initializer
-        image: ${UPLOAD_INIT_WORKER}
+        image: 6zekiel/upload_data:v1
         imagePullPolicy: IfNotPresent
         env:
         - name: ML_DB_USER
@@ -43,6 +45,8 @@ kind: CronJob
 metadata:
   name: ml-periodic-trigger
   namespace: ml-application-ns
+  labels:
+    component: ml-cronjob-initializer
 spec:
   schedule: "*/10 * * * *" # Every h:n(10) minutes, where (-1>n>7 & n.dtype = int) && (-1>h>13 & h.dtype = int)
   jobTemplate:
@@ -51,7 +55,7 @@ spec:
         spec:
           containers:
           - name: trigger
-            image: ${UPLOAD_TRAINING_WORKER}
+            image: 6zekiel/init-model_trainer_scheduler:latest
             command: ["python", "training_scheduler.py"]
             env:
             - name: SENSOR_DB_USER

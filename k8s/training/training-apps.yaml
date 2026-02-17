@@ -15,8 +15,15 @@ spec:
     spec:   
       containers:
       - name: worker
-        image: ${UPLOAD_TRAINING_WORKER}
+        image: 6zekiel/init-model_trainer_scheduler:latest
         imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            cpu: "100m" 
+            memory: "1Gi"
+          limits:
+            cpu: "1000m"
+            memory: "2Gi"
         env:
         - name: SENSOR_DB_USER
           valueFrom:
@@ -63,6 +70,28 @@ spec:
             configMapKeyRef:
               name: ml-config
               key: db-port
+        - name: PYTHONPATH
+          value: "."
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ml-trainer-hpa
+  namespace: ml-application-ns
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ml-trainer
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 10
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -81,7 +110,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: ${UPLOAD_TRAINING_WORKER}
+        image: 6zekiel/init-model_trainer_scheduler:latest
         imagePullPolicy: IfNotPresent
         command: ["python", "-m", "training_scheduler", "enable-api"]
         ports:
@@ -132,6 +161,8 @@ spec:
             configMapKeyRef:
               name: ml-config
               key: db-port
+        - name: PYTHONPATH
+          value: "."
 ---
 apiVersion: v1
 kind: Service

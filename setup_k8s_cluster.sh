@@ -4,7 +4,7 @@
 minikube addons enable metrics-server
 kubectl -n kube-system apply -f https://github.com/emberstack/kubernetes-reflector/releases/latest/download/reflector.yaml
 
-# Startup Database Cluster
+# Startup all Database Clusters
 bash ./scripts/database_k8s_setup.sh
 
 # Startup Monitoring Application
@@ -12,6 +12,9 @@ bash ./scripts/monitoring_k8s_setup.sh
 
 # Startup Ingestion Application
 bash ./scripts/ingestion_k8s_setup.sh
+
+# Startup Training Application
+bash ./scripts/training_k8s_setup.sh
 
 # Startup Dashboard Application
 bash ./scripts/dashboard_k8s_setup.sh
