@@ -15,4 +15,4 @@ ENV DATABASE_HOST="sensor-db-ha-rw.database-ns"
 ENV DATABASE_PORT="5432"
 
 ENTRYPOINT [ "uvicorn" ]
-CMD [ "src.app:app", "--host", "0.0.0.0", "--port", "8001" ]
+CMD [ "src.api:app", "--host", "0.0.0.0", "--port", "8001" ]

@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: monitoring-backend
-        image: docker.io/originaluuser/divteam_monitoring_backend:2.0
+        image: docker.io/originaluuser/divteam_monitoring_backend:2.1
         command: [ "procrastinate" ]
         args: [ "--app=app.app", "worker" ]
         resources:
@@ -30,7 +30,7 @@ spec:
         env:
           - name: DATABASE_USER
             valueFrom:
-              configMapKeyRef:
+              secretKeyRef:
                 name: mirror-postgres-credentials-admin
                 key: username
           - name: POSTGRES_PASS

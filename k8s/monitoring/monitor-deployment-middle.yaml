@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: monitoring-middleend
-        image: docker.io/originaluuser/divteam_monitoring_middleend:0.1
+        image: docker.io/originaluuser/divteam_monitoring_middleend:0.2
         command: [ "uvicorn" ]
         args: [ "src.app:app", "--host", "0.0.0.0", "--port", "8000" ]
         resources:
@@ -32,7 +32,7 @@ spec:
         env:
           - name: DATABASE_USER
             valueFrom:
-              configMapKeyRef:
+              secretKeyRef:
                 name: mirror-postgres-credentials-admin
                 key: username
           - name: POSTGRES_PASS
