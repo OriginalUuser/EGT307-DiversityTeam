@@ -7,10 +7,8 @@ export $(shell sed 's/=.*//' .env)
 
 # Pipelines!
 all: \
-	start-minikube \
 	minikube-installations \
 	setup-db \
-	upload-data \
 	setup-monitoring \
 	setup-ingestion \
 	setup-training \
