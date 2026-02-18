@@ -12,7 +12,7 @@ spec:
   to:
   - group: "" 
     kind: Service
-    name: monitoring-service
+    name: monitoring-front-service
 
 ---
 

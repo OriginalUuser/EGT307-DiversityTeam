@@ -56,7 +56,7 @@ spec:
                     restartPolicy: Never
                     containers:
                     - name: worker
-                      image: docker.io/originaluuser/divteam_monitoring_cronjob:0.3
+                      image: docker.io/originaluuser/divteam_monitoring_cronjob:0.4
                       command: ["python3", "./send-request.py"]
                       env:
                       - name: TABLES
