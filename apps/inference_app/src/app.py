@@ -2,7 +2,7 @@
 Fast API for Model Inference
 ---------------------------
 
-GET:
+POST:
     - Read latest data from database
     - Load trained model
     - Make inference
@@ -11,72 +11,69 @@ GET:
 
 from pydantic import BaseModel
 from fastapi import FastAPI, status
-import psycopg2
 import os
+import psycopg2
 
-from .inference import makeInference
+from inference import makeInference
 
 # Connect to database
 DB_POSTGRES_PASS = os.getenv("DB_POSTGRES_PASS")
 DB_DATABASE_DNS = os.getenv("DB_DATABASE_DNS")
+
 ML_POSTGRES_PASS = os.getenv("ML_POSTGRES_PASS")
 ML_DATABASE_DNS = os.getenv("ML_DATABASE_DNS")
+
 DATABASE_PORT = os.getenv("DATABASE_PORT")
 
 # Sensor Database
-DB_NAME     = "sensor-db"
-DB_USER        = "admin"
+DB_NAME = "sensor-db"
+DB_USER = "admin"
 
-conn_db = psycopg2.connect(
+db_conn = psycopg2.connect(
     user=DB_USER,
     password=DB_POSTGRES_PASS,
     host=DB_DATABASE_DNS,
     port=DATABASE_PORT,
     database=DB_NAME
 )
-conn_db.autocommit = True
-cursor_db = conn_db.cursor()
+db_conn.autocommit = True
 
 # Model Database
-ML_NAME     = "ml-artifacts"
-ML_USER        = "ml_admin"
+ML_NAME = "ml-artifacts"
+ML_USER = "ml_admin"
 
-conn_ml = psycopg2.connect(
+ml_conn = psycopg2.connect(
     user=ML_USER,
     password=ML_POSTGRES_PASS,
     host=ML_DATABASE_DNS,
     port=DATABASE_PORT,
     database=ML_NAME
 )
-conn_ml.autocommit = True
-cursor_ml = conn_ml.cursor()
+ml_conn.autocommit = True
 
 # Setup app
 app = FastAPI()
 
 # Define payload
 class Evaluate(BaseModel):
-    table_name:     str
+    table_name: str
+    target_col: str
+    batch_id: str
+    window_size: int = 10
+    horizon: int = 24
 
 # Accept payload
-@app.post("/", status_code=status.HTTP_201_CREATED)
+@app.post("/", status_code=status.HTTP_200_OK)
 def post_root(payload: Evaluate):
-    # Read latest database data
-    cursor_db.execute(f"SELECT * FROM {payload.table_name} ORDER BY created_at DESC LIMIT 10;")
-    raw_data = cursor_db.fetchall()
+    result_df = makeInference(
+        sensor_conn=db_conn,
+        ml_conn=ml_conn,
+        table_name=payload.table_name,
+        target_col=payload.target_col,
+        batch_id=payload.batch_id,
+        window_size=payload.window_size,
+        horizon=payload.horizon
+    )
 
-    # Load trained model
-    # Name of table containing model
-    table_name = "training_history"
-    query = f"SELECT model_object, model_weights FROM {table_name} LIMIT 1;"
-    cursor_ml.execute(query)
-    row = cursor_ml.fetchone()
-    print(row)
-    model_binary = row[0]
-    weights = row[1] 
-
-    # Make inference
-    inferences = makeInference(raw_data, weights, model_binary)
-
-    # Return inference
-    return inferences
+    final_results = result_df.to_dict(orient="records")
+    return final_results
