@@ -10,7 +10,7 @@ spec:
     spec:
       containers:
       - name: db-initializer
-        image: docker.io/originaluuser/divteam_init_monitoring:0.1
+        image: docker.io/originaluuser/divteam_monitoring_init:0.1
         command: ["python", "db_setup.py"]
         imagePullPolicy: IfNotPresent
         env:
