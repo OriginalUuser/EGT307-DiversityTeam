@@ -28,7 +28,7 @@ logger.debug("Engine created successfully")
 # Get training url
 TRAINING_PORT = os.getenv("TRAINING_PORT")
 TRAINING_DNS = os.getenv("TRAINING_DNS")
-TRAINING_URL = f"http://{TRAINING_DNS}:{TRAINING_PORT}"
+TRAINING_URL = f"http://{TRAINING_DNS}:{TRAINING_PORT}/train/batch"
 
 # Setup procrastinate
 app = procrastinate.App(connector=AiopgConnector(dsn=DATABASE_URI)) 
@@ -53,7 +53,7 @@ project = ws.search_project("Aquaponics Monitoring")
 if isinstance(project, list): project = project[0]
 
 @app.task(name="generate_report")
-async def generate_report(
+async def generation_task(
     batch_id: str,
     table_name: str,
     columns_to_check: list[str],

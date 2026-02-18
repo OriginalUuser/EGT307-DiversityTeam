@@ -17,8 +17,8 @@ spec:
     spec:
       containers:
       - name: monitoring-middleend
-        image: docker.io/originaluuser/divteam_monitoring_middleend:0.5
-        command: [ "uvicorn" ]
+        image: docker.io/originaluuser/divteam_monitoring_middleend:0.7
+        command: [ "python", "-m", "uvicorn" ]
         args: [ "src.api:api", "--host", "0.0.0.0", "--port", "8000" ]
         resources:
           limits:
@@ -51,7 +51,7 @@ spec:
             valueFrom:
               configMapKeyRef:
                 name: monitoring-config
-                key: DATABASE_HOST
+                key: DATABASE_HOST_RW
           - name: DATABASE_PORT
             valueFrom:
               configMapKeyRef:

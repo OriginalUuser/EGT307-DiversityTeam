@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: monitoring-backend
-        image: docker.io/originaluuser/divteam_monitoring_backend:2.2
+        image: docker.io/originaluuser/divteam_monitoring_backend:2.4
         command: [ "procrastinate" ]
         args: [ "--app=app.app", "worker" ]
         resources:
@@ -45,11 +45,11 @@ spec:
               configMapKeyRef:
                 name: monitoring-config
                 key: DATABASE_NAME
-          - name: DATABASE_HOST_RW
+          - name: DATABASE_HOST
             valueFrom:
               configMapKeyRef:
                 name: monitoring-config
-                key: DATABASE_HOST
+                key: DATABASE_HOST_RW
           - name: DATABASE_PORT
             valueFrom:
               configMapKeyRef:

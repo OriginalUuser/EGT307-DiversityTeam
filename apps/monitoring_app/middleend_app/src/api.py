@@ -31,10 +31,11 @@ class Evaluate(BaseModel):
 async def queue_generation(task: Evaluate) -> dict:
     batch_id = str(uuid.uuid4())
     logger.info(f"Queuing Task {batch_id}: Create report for {task.table_name}")
-    await app.configure_task(name="generate_report").defer_async(
-        batch_id=batch_id,
-        **task.model_dump()
-    )
+    async with app.open_async():
+        await app.configure_task(name="generate_report").defer_async(
+            batch_id=batch_id,
+            **task.model_dump()
+        )
     logger.info(f"Batch {batch_id} successfully dispatched to Procrastinate.")
     return {"batch_id": batch_id, **task.model_dump()}
 
