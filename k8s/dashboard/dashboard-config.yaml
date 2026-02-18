@@ -6,3 +6,26 @@ metadata:
 data:
   DATABASE_DNS: "sensor-db-ha-ro.database-ns"
   DATABASE_PORT: "5432"
+  DATA_AMOUNT: "110"
+  MONITORING_DNS: "monitoring-middle-service.monitoring-ns"
+  MONITORING_PORT: "8001"
+  POND: |
+    {
+      "Pond 1": "iot_pond_1",
+      "Pond 2": "iot_pond_2",
+      "Pond 3": "iot_pond_3",
+      "Pond 4": "iot_pond_4"    
+    }
+
+  SENSORS: |
+    {
+      "Temperature (°C)": "temperature",
+      "pH": "ph",
+      "Dissolved Oxygen (g/ml)": "dissolved_oxygen",
+      "Turbidity (NTU)": "turbidity",
+      "Ammonia (g/ml)": "ammonia",
+      "Nitrate (g/ml)": "nitrate",
+      "Fish Popluation": "population",
+      "Length of Fish": "fish_length",
+      "Weight of Fish": "fish_weight"
+    }

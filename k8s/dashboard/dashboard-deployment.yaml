@@ -17,7 +17,8 @@ spec:
     spec:
       containers:
       - name: dashboard-pipeline
-        image: docker.io/crapulous/main_repo:7
+        image: docker.io/crapulous/main_repo:8
+        #imagePullPolicy: Never                
         command: ["streamlit", "run", "src/dashboard.py", "--server.port=8080", "--server.address=0.0.0.0", "--server.baseUrlPath=dashboard", "--server.headless=true", "--browser.gatherUsageStats=false"]
         resources:
           limits:
@@ -39,6 +40,31 @@ spec:
               configMapKeyRef:
                 name: dashboard-config
                 key: DATABASE_PORT
+          - name: MONITORING_DNS
+            valueFrom:
+              configMapKeyRef:
+                name: dashboard-config
+                key: MONITORING_DNS
+          - name: MONITORING_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: dashboard-config
+                key: MONITORING_PORT
+          - name: SENSORS
+            valueFrom:
+              configMapKeyRef:
+                name: dashboard-config
+                key: SENSORS 
+          - name: POND
+            valueFrom:
+              configMapKeyRef:
+                name: dashboard-config
+                key: POND
+          - name: DATA_AMOUNT
+            valueFrom:
+              configMapKeyRef:
+                name: dashboard-config
+                key: DATA_AMOUNT
           - name: POSTGRES_PASS
             valueFrom:
               secretKeyRef:

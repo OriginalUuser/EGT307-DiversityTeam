@@ -4,8 +4,7 @@ from db import get_engine
 
 def load_pond_data(
     table_name: str,
-    window_size: int,
-    forecast_horizon: int
+    data_amount: int
 ) -> pd.DataFrame:
     """
     Load the most recent pond data from Postgres.
@@ -27,15 +26,13 @@ def load_pond_data(
         Data sorted ascending by time
     """
 
-    rows_needed = window_size + forecast_horizon
-
     engine = get_engine()
 
     query = f"""
         SELECT *
         FROM {table_name}
         ORDER BY created_at DESC
-        LIMIT 110
+        LIMIT {data_amount}
     """
 
     df = pd.read_sql(query, engine)

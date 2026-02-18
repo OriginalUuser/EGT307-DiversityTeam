@@ -4,6 +4,9 @@ from streamlit_autorefresh import st_autorefresh
 import datetime
 import pandas as pd
 import altair as alt
+import os
+import json
+import requests
 
 # -------------------------------
 # Page config
@@ -16,27 +19,11 @@ st.set_page_config(
 # -------------------------------
 # Pond configuration
 # -------------------------------
-POND_FILES = {
-    "Pond 1": "iot_pond_1",
-    "Pond 2": "iot_pond_2",
-    "Pond 3": "iot_pond_3",
-    "Pond 4": "iot_pond_4",    
-}
+pond_raw = os.getenv("POND","{}")
+POND_FILES = json.loads(pond_raw)
 
-# -------------------------------
-# Sensor configuration
-# -------------------------------
-SENSORS = {
-    "Temperature (°C)": "temperature",
-    "pH": "ph",
-    "Dissolved Oxygen (g/ml)": "dissolved_oxygen",
-    "Turbidity (NTU)": "turbidity",
-    "Ammonia (g/ml)": "ammonia",
-    "Nitrate (g/ml)": "nitrate",
-    "Fish Popluation": "population",
-    "Length of Fish": "fish_length",
-    "Weight of Fish": "fish_weight"
-}
+sensors_raw = os.getenv("SENSORS","{}")
+SENSORS = json.loads(sensors_raw)
 
 WINDOW_SIZE = 100
 FORECAST_HORIZON = 10
@@ -76,12 +63,15 @@ st.caption(
 # -------------------------------
 # Cached data retrieval
 # -------------------------------
+
+data_amount_raw = os.getenv('DATA_AMOUNT')
+DATA_AMOUNT = int(data_amount_raw)
+
 @st.cache_data
 def get_data(table_name, refresh_counter):
     return load_pond_data(
         table_name=table_name,
-        window_size=WINDOW_SIZE,
-        forecast_horizon=FORECAST_HORIZON
+        data_amount= DATA_AMOUNT
     )
 
 # -------------------------------
@@ -209,6 +199,62 @@ elif selected_page == "Aggregate Overview":
 # =====================================================
 else:
     st.title(f"🌱 {selected_page} Monitoring Dashboard")
+
+    current_table = POND_FILES[selected_page]
+
+    # -------------------------------
+    # 📡 Sidebar Report Trigger (Pond-Specific)
+    # -------------------------------
+    with st.sidebar.expander(f"🛠️ Run Analysis for {selected_page}", expanded=True):
+        #st.write(f"**Target Table:** `{current_table}`")
+        
+        # User configures columns and range
+        selected_sensor_labels = st.multiselect(
+            "Select Columns",
+            options=list(SENSORS.keys()),
+            default=list(SENSORS.keys())[:1] # Defaults to first 
+        )
+        
+        report_range = st.number_input(
+            "Report Range (Rows)", 
+            min_value=10, max_value=2000, value=100
+        )
+
+        if st.button("🚀 Trigger Monitoring Job"):
+            if not selected_sensor_labels:
+                st.warning("Please select at least one column.")
+            else:
+                db_column_names = [SENSORS[label] for label in selected_sensor_labels]
+                # Prepare the payload
+                payload = {
+                    "table_name": current_table,
+                    "columns": db_column_names,
+                    "report_range": report_range
+                }
+
+                # API Details from Environment
+                mon_dns = os.getenv("MONITORING_DNS")
+                mon_port = os.getenv("MONITORING_PORT")
+                url = f"http://{mon_dns}:{mon_port}/trigger"
+
+                try:
+                    with st.spinner("Dispatching Job..."):
+                        response = requests.post(url, json=payload, timeout=5)
+                    
+                    if response.status_code == 200:
+                        st.success(f"Job triggered for {current_table}!")
+                    else:
+                        st.error(f"Failed to trigger: {response.status_code}")
+                except Exception as e:
+                    st.error(f"Could not connect to Monitoring Service: {e}")
+
+
+
+
+
+
+
+
 
     df = get_data(POND_FILES[selected_page], refresh_counter)\
             .sort_values("created_at").reset_index(drop=True)
