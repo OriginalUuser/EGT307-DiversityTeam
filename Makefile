@@ -18,10 +18,13 @@ all: \
 	
 rebuild: clean all
 
-# --- Minikube startup! ---
+# --- Minikube! ---
 # Build Minikube
 start-minikube:
 	minikube start --cpus=max --memory=max
+
+shutdown:
+	minikube delete
 
 # Minikube addons
 minikube-installations:
@@ -79,9 +82,16 @@ model-artifacts-schema:
 # Create minikube service
 minikube-tunnel:
 	minikube service gateway-api-nginx -n nginx-gateway
+	
+# Setup Headlamp monitoring
+headlamp:
+	bash ./scripts/headlamp_monitoring.sh
+	@echo "Started Headlamp! ⋆｡°✩"
+	minikube service headlamp -n headlamp-ns
 
-shutdown:
-	minikube delete
+headlamp-token:
+	@echo "Headlamp token! ⋆˚꩜｡"
+	kubectl -n headlamp-ns get secret headlamp-admin -o go-template='{{.data.token | base64decode}}'
 
 # Tools for convenience
 clean:
