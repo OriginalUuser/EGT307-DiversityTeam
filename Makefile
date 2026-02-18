@@ -87,6 +87,8 @@ minikube-tunnel:
 headlamp:
 	bash ./scripts/headlamp_monitoring.sh
 	@echo "Started Headlamp! ⋆｡°✩"
+	kubectl wait --for=condition=Ready pod -l k8s-app=headlamp -n headlamp-ns --timeout=120s
+	@echo "Headlamp pod is ready! ⋆｡°✩"
 	minikube service headlamp -n headlamp-ns
 
 headlamp-token:
