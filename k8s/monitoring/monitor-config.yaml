@@ -11,6 +11,7 @@ data:
   DATABASE_HOST: "sensor-db-ha-ro.database-ns"
   DATABASE_PORT: "5432"
   DATABASE_NAME: "sensor-db"
+  DATABASE_HOST_RW: "sensor-db-ha-rw.database-ns"
 
   TRAINING_DNS: "ml-api-service.ml-application-ns"
   TRAINING_PORT: "80"

@@ -19,18 +19,18 @@ spec:
         - name: SENSOR_DB_USER
           valueFrom:
             secretKeyRef:
-              name: mirror-postgres-credentials-ml-admin
+              name: mirror-postgres-credentials-admin
               key: username
         - name: SENSOR_DB_PASS
           valueFrom:
             secretKeyRef:
-              name: mirror-postgres-credentials-ml-admin
+              name: mirror-postgres-credentials-admin
               key: password
         - name: SENSOR_DB_HOST
           valueFrom:
             configMapKeyRef:
               name: monitoring-config
-              key: DATABASE_DNS
+              key: DATABASE_HOST_RW
         - name: SENSOR_DB_NAME
           valueFrom:
             configMapKeyRef:
