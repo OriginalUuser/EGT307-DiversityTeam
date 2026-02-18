@@ -16,6 +16,11 @@ if minikube status | grep -q "host: Running"; then
     kubectl apply -f "${MONITORING_PATH}/monitor-dbcreds.yaml"
     kubectl apply -f "${MONITORING_PATH}/monitor-config.yaml"
 
+    # Run procrastinate setup job
+    kubectl wait --for=condition=Ready cluster/sensor-db-ha --namespace=database-ns --timeout=120s
+    kubectl apply -f "${MONITORING_PATH}/monitor-setup-jobs.yaml"
+    kubectl wait --for=condition=complete job/monitoring-setup -n monitoring-ns --timeout=240s
+
     # Storage
     kubectl apply -f "${MONITORING_PATH}/monitor-storage.yaml"
 
