@@ -7,7 +7,6 @@ export $(shell sed 's/=.*//' .env)
 
 # Pipelines!
 all: \
-	start-minikube \
 	minikube-installations \
 	setup-db \
 	upload-data \
@@ -20,10 +19,13 @@ all: \
 	
 rebuild: clean all
 
-# --- Minikube startup! ---
+# --- Minikube! ---
 # Build Minikube
 start-minikube:
 	minikube start --cpus=max --memory=max
+
+shutdown:
+	minikube delete
 
 # Minikube addons
 minikube-installations:
@@ -73,8 +75,15 @@ model-artifacts-schema:
 	bash ./scripts/training_upload_schema.sh
 	@echo "Uploaded ml artifacts db schema! :3"
 
-shutdown:
-	minikube delete
+# Setup Headlamp monitoring
+headlamp:
+	bash ./scripts/headlamp_monitoring.sh
+	@echo "Started Headlamp! ⋆｡°✩"
+	minikube service headlamp -n headlamp-ns
+
+headlamp-token:
+	@echo "Headlamp token! ⋆˚꩜｡"
+	kubectl -n headlamp-ns get secret headlamp-admin -o go-template='{{.data.token | base64decode}}'
 
 # Tools for convenience
 clean:

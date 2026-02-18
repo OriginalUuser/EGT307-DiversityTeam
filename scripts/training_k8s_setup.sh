@@ -21,7 +21,7 @@ if minikube status | grep -q "host: Running"; then
 
     # Wait for schema to be added to the database before taking any further actions
     echo "Waiting for schema upload to complete.............."
-    kubectl wait --for=condition=complete job/ml-db-setup -n $TRAINING_NAMESPACE --timeout=120s
+    kubectl wait --for=condition=complete job/ml-db-setup -n $TRAINING_NAMESPACE --timeout=180s
 
     # Start model training and api deployments
     echo "YAYYYYY!! Schema is ready! Deploying applications! ^.^"
