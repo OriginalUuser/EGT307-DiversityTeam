@@ -1,0 +1,44 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: monitoring-setup
+  namespace: monitoring-ns
+  labels:
+    component: monitor-schema-initializer
+spec:
+  template:
+    spec:
+      containers:
+      - name: db-initializer
+        image: docker.io/originaluuser/divteam_init_monitoring:0.1
+        command: ["python", "db_setup.py"]
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: PYTHONPATH
+          value: "."
+        - name: SENSOR_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: mirror-postgres-credentials-ml-admin
+              key: username
+        - name: SENSOR_DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: mirror-postgres-credentials-ml-admin
+              key: password
+        - name: SENSOR_DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: monitoring-config
+              key: DATABASE_DNS
+        - name: SENSOR_DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: monitoring-config
+              key: DATABASE_NAME
+        - name: SENSOR_DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: monitoring-config
+              key: DATABASE_PORT
+      restartPolicy: OnFailure

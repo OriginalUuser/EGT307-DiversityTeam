@@ -48,7 +48,7 @@ spec:
         type: PathPrefix
         value: /
     backendRefs:
-    - name: monitoring-service
+    - name: monitoring-front-service
       port: 8000
       namespace: monitoring-ns
 

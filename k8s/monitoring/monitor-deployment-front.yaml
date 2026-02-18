@@ -1,25 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: monitoring-deploy
+  name: monitoring-front-deploy
   namespace: monitoring-ns
   labels:
-    app: monitoring-app
+    app: monitoring-frontapp
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: monitoring-app
+      app: monitoring-frontapp
   template:
     metadata:
       labels:
-        app: monitoring-app
+        app: monitoring-frontapp
     spec:
       volumes:
         - name: monitor-pv
           persistentVolumeClaim:
             claimName: monitor-pvc
-
       containers:
       - name: monitoring-frontend
         image: docker.io/originaluuser/divteam_monitoring_frontend:1.6
@@ -46,73 +45,35 @@ spec:
               configMapKeyRef:
                 name: monitoring-config
                 key: WORKSPACE_DIR
-        
-      - name: monitoring-backend
-        image: docker.io/originaluuser/divteam_monitoring_backend:1.6
-        command: [ "uvicorn" ]
-        args: [ "src.app:app", "--host", "0.0.0.0", "--port", "8001" ]
-        resources:
-          limits:
-            memory: "512Mi"
-            cpu: "250m"
-          requests:
-            memory: "256Mi"
-            cpu: "50m"
-        ports:
-        - containerPort: 8001
-        env:
-          - name: WORKSPACE_URL
-            valueFrom:
-              configMapKeyRef:
-                name: monitoring-config
-                key: WORKSPACE_URL
-          - name: DATABASE_DNS
-            valueFrom:
-              configMapKeyRef:
-                name: monitoring-config
-                key: DATABASE_DNS
-          - name: DATABASE_PORT
-            valueFrom:
-              configMapKeyRef:
-                name: monitoring-config
-                key: DATABASE_PORT
-          - name: POSTGRES_PASS
-            valueFrom:
-              secretKeyRef:
-                name: mirror-postgres-credentials-admin
-                key: password
 
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: monitoring-service
+  name: monitoring-front-service
   namespace: monitoring-ns
 spec:
   selector:
-    app: monitoring-app
+    app: monitoring-frontapp
   ports:
   - name: monitor-frontend-port
     port: 8000
     targetPort: 8000
     protocol: TCP
-  - name: monitor-backend-port
-    port: 8001
-    targetPort: 8001
 
 ---
 
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: monitoring-app-hpa
+  name: monitoring-front-app-hpa
   namespace: monitoring-ns
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: monitoring-deploy
+    name: monitoring-front-deploy
   minReplicas: 1
   maxReplicas: 5
   metrics:
@@ -121,4 +82,4 @@ spec:
       name: cpu
       target:
         type: Utilization
-        averageUtilization: 50
+        averageUtilization: 75

@@ -5,9 +5,15 @@ metadata:
   namespace: monitoring-ns
 data:
   WORKSPACE_DIR: "/vol/workspace"
-  WORKSPACE_URL: "http://0.0.0.0:8000"
-  DATABASE_DNS: "sensor-db-ha-ro.database-ns"
+  WORKSPACE_DNS: "monitoring-front-service.monitoring-ns"
+  WORKSPACE_PORT: "8000"
+
+  DATABASE_HOST: "sensor-db-ha-ro.database-ns"
   DATABASE_PORT: "5432"
+  DATABASE_NAME: "sensor-db"
+
+  TRAINING_DNS: "ml-api-service.ml-application-ns"
+  TRAINING_PORT: "80"
 
 ---
 
@@ -25,5 +31,5 @@ data:
   tables: "iot_pond_1,iot_pond_2,iot_pond_3,iot_pond_4,iot_pond_6,iot_pond_10,iot_pond_11,iot_pond_12"  
   range: "10000"
   columns: "temperature,turbidity,dissolved_oxygen,ph,ammonia,nitrate,population,fish_length,fish_weight"
-  dns: "monitoring-service.monitoring-ns"
-  port: "8001"
+  dns: "monitoring-back-service.monitoring-ns"
+  port: "8000"

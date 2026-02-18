@@ -11,10 +11,18 @@ if minikube status | grep -q "host: Running"; then
 
     # Monitoring Application
     kubectl apply -f "${MONITORING_PATH}/monitor-namespace.yaml"
+
+    # Configurations
     kubectl apply -f "${MONITORING_PATH}/monitor-dbcreds.yaml"
     kubectl apply -f "${MONITORING_PATH}/monitor-config.yaml"
+
+    # Storage
     kubectl apply -f "${MONITORING_PATH}/monitor-storage.yaml"
-    kubectl apply -f "${MONITORING_PATH}/monitor-deployment.yaml"
+
+    # Deployments
+    kubectl apply -f "${MONITORING_PATH}/monitor-deployment-front.yaml"
+    kubectl apply -f "${MONITORING_PATH}/monitor-deployment-middle.yaml"
+    kubectl apply -f "${MONITORING_PATH}/monitor-deployment-back.yaml"
 
     # Monitoring CronJob
     kubectl apply -f "${MONITORING_PATH}/monitor-serviceacc.yaml"

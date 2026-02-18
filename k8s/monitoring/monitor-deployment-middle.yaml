@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monitoring-middle-deploy
+  namespace: monitoring-ns
+  labels:
+    app: monitoring-middleapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: monitoring-middleapp
+  template:
+    metadata:
+      labels:
+        app: monitoring-middleapp
+    spec:
+      containers:
+      - name: monitoring-middleend
+        image: docker.io/originaluuser/divteam_monitoring_middleend:0.1
+        command: [ "uvicorn" ]
+        args: [ "src.app:app", "--host", "0.0.0.0", "--port", "8000" ]
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+          requests:
+            memory: "256Mi"
+            cpu: "50m"
+        ports:
+        - containerPort: 8000
+        env:
+          - name: DATABASE_USER
+            valueFrom:
+              configMapKeyRef:
+                name: mirror-postgres-credentials-admin
+                key: username
+          - name: POSTGRES_PASS
+            valueFrom:
+              secretKeyRef:
+                name: mirror-postgres-credentials-admin
+                key: password
+          - name: DATABASE_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: monitoring-config
+                key: DATABASE_NAME
+          - name: DATABASE_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: monitoring-config
+                key: DATABASE_HOST
+          - name: DATABASE_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: monitoring-config
+                key: DATABASE_PORT
+          
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: monitoring-middle-service
+  namespace: monitoring-ns
+spec:
+  selector:
+    app: monitoring-middleapp
+  ports:
+  - name: monitor-middleend-port
+    port: 8000
+    targetPort: 8000
+    protocol: TCP
+
+---
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: monitoring-middle-app-hpa
+  namespace: monitoring-ns
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: monitoring-middle-deploy
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
