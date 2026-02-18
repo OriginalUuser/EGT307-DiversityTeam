@@ -4,7 +4,7 @@ metadata:
   name: headlamp-cluster-rolebinding
 subjects:
 - kind: ServiceAccount
-  name: headlamp-serviceaccount
+  name: headlamp-service-account
   namespace: headlamp-ns
 roleRef:
   kind: ClusterRole
