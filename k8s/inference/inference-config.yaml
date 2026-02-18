@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: inference-config
+  namespace: inference-ns
+data:
+  DB_DATABASE_DNS: "sensor-db-ha-rw.database-ns"
+  ML_DATABASE_DNS: "ml-artifacts-db-rw.ml-artifacts-db-ns"
+  DATABASE_PORT: "5432"
