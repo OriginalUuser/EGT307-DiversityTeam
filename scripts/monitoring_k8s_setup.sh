@@ -9,9 +9,6 @@ if minikube status | grep -q "host: Running"; then
     # Setup the namespace
     kubectl apply -f "${MONITORING_PATH}/monitor-namespace.yaml"
 
-    # Monitoring Application
-    kubectl apply -f "${MONITORING_PATH}/monitor-namespace.yaml"
-
     # Configurations
     kubectl apply -f "${MONITORING_PATH}/monitor-dbcreds.yaml"
     kubectl apply -f "${MONITORING_PATH}/monitor-config.yaml"
