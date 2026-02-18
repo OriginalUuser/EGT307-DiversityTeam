@@ -24,17 +24,15 @@ jobs:
         run: kubectl get pods -A
 
       - name: Set up k8s cluster
-        run: bash ./setup_k8s_cluster.sh
+        run: |
+          make
+          make upload-data
         env:
           POSTGRES_PASS: ${{ secrets.POSTGRES_PASS }}
 
       - name: Uploading CSV data to database cluster
         run: |
-          kubectl wait --for=condition=Ready cluster/sensor-db-ha --namespace=database-ns --timeout=240s
-          bash ./scripts/database_run_upload.sh
-          kubectl wait --for=condition=complete job/data-loader -n database-ns --timeout=240s
-
-          # Open tunnel
+          # Open tunnels
           kubectl port-forward svc/sensor-db-ha-rw 5432:5432 -n database-ns &
           for i in {1..30}; do
               if nc -z 127.0.0.1 5432; then
@@ -43,8 +41,16 @@ jobs:
               fi
               sleep 0.5
           done
+          kubectl port-forward svc/ml-artifacts-db-rw 5433:5432 -n ml-artifacts-db-ns &
+          for i in {1..30}; do
+              if nc -z 127.0.0.1 5433; then
+                  echo "Tunnel is open!"
+                  break
+              fi
+              sleep 0.5
+          done
 
-      - name: Testing database cluster, uploading CSV data to database cluster
+      - name: Testing sensor database cluster
         uses: yakubique/query-postgresql@v1.2
         with:
           query: "SELECT * FROM iot_pond_1 LIMIT 10"
@@ -53,6 +59,17 @@ jobs:
           username: ${{ secrets.POSTGRES_USER }}
           password: ${{ secrets.POSTGRES_PASS }}
           db: ${{ secrets.SENSOR_DB_NAME }}
+          ssl: 'false'
+
+      - name: Testing ml artifact database cluster
+        uses: yakubique/query-postgresql@v1.2
+        with:
+          query: "SELECT * FROM training_history LIMIT 10"
+          host: 127.0.0.1
+          port: 5433
+          username: ${{ secrets.ML_POSTGRES_USER }}
+          password: ${{ secrets.ML_POSTGRES_PASS }}
+          db: ${{ secrets.ML_DB_NAME }}
           ssl: 'false'
 
       - name: Testing monitoring deployment, send report generation request to API, send request to UI
@@ -64,7 +81,7 @@ jobs:
           # Open tunnel
           kubectl port-forward svc/monitoring-front-service 8000:8000 -n monitoring-ns &
           for i in {1..30}; do
-              if nc -z 127.0.0.1 8001; then
+              if nc -z 127.0.0.1 8000; then
                   echo "Tunnel is open!"
                   break
               fi
@@ -104,4 +121,38 @@ jobs:
 
           # Curl API to see if it exists
           curl http://127.0.0.1:8002
+
+      - name: Testing dashboard deployment, send curl to API
+        run: |
+          kubectl wait --for=condition=Ready pod -l app=dashboard-app --namespace=dashboard-ns --timeout=240s
+
+          # Open tunnel
+          kubectl port-forward svc/dashboard-service 8003:8081 -n dashboard-ns &
+          for i in {1..30}; do
+              if nc -z 127.0.0.1 8003; then
+                  echo "Tunnel is open!"
+                  break
+              fi
+              sleep 0.5
+          done
+
+          # Curl API to see if it exists
+          curl http://127.0.0.1:8003
+
+      - name: Testing training deployment, send curl to API
+        run: |
+          kubectl wait --for=condition=Ready pod -l app=ml-trainer --namespace=ml-application-ns --timeout=240s
+
+          # Open tunnel
+          kubectl port-forward svc/ml-api-service 8004:80 -n ml-application-ns &
+          for i in {1..30}; do
+              if nc -z 127.0.0.1 8004; then
+                  echo "Tunnel is open!"
+                  break
+              fi
+              sleep 0.5
+          done
+
+          # Curl API to see if it exists
+          curl http://127.0.0.1:8004
       

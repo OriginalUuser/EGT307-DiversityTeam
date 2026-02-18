@@ -12,6 +12,9 @@ if minikube status | grep -q "host: Running"; then
     # Run the data upload job
     kubectl apply -f "${DATABASE_K8S_PATH}/sensor-database/postgres-job-configmap.yaml"
     kubectl apply -f "${DATABASE_K8S_PATH}/sensor-database/postgres-data-loader.yaml"
+
+    # Wait for job to complete
+    kubectl wait --for=condition=complete job/data-loader -n database-ns --timeout=240s
 else
     echo "Minikube is not running. Aborting script execution."
     exit 1
