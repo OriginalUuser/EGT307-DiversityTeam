@@ -62,7 +62,7 @@ jobs:
           sleep 30
 
           # Open tunnel
-          kubectl port-forward svc/monitoring-service 8000:8000 -n monitoring-ns &
+          kubectl port-forward svc/monitoring-front-service 8000:8000 -n monitoring-ns &
           for i in {1..30}; do
               if nc -z 127.0.0.1 8001; then
                   echo "Tunnel is open!"
@@ -70,7 +70,7 @@ jobs:
               fi
               sleep 0.5
           done
-          kubectl port-forward svc/monitoring-service 8001:8001 -n monitoring-ns &
+          kubectl port-forward svc/monitoring-middle-service 8001:8000 -n monitoring-ns &
           for i in {1..30}; do
               if nc -z 127.0.0.1 8001; then
                   echo "Tunnel is open!"
