@@ -22,7 +22,7 @@ api = FastAPI(title="ML training API")
 
 def get_db_config():
     inspector = inspect(sensor_engine)
-    tables = inspector.get_table_names(schema="public")
+    tables = [name for name in inspector.get_table_names(schema="public") if name.split("_")[0] == "iot"]
 
     if not tables:
         logger.warning("No tables found in sensor-db.")

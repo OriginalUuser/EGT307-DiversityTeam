@@ -9,13 +9,12 @@ export $(shell sed 's/=.*//' .env)
 all: \
 	minikube-installations \
 	setup-db \
-	upload-data \
 	setup-monitoring \
 	setup-ingestion \
 	setup-training \
 	training-cronjob \
 	setup-dashboard \
-	training-cronjob
+	setup-gatewayapi
 	
 rebuild: clean all
 
@@ -59,6 +58,11 @@ setup-dashboard:
 	bash ./scripts/dashboard_k8s_setup.sh
 	@echo "Successfully setup Dashboard application! ^p^"
 
+# Startup GatewayAPI
+setup-gatewayapi:
+	bash ./scripts/gatewayapi_k8s_setup.sh
+	@echo "Successfully setup GatewayAPI! ;^;"
+
 # --- Cronjob, Data Upload & Misc scripts! ---
 # Upload data to Database Clusters
 upload-data:
@@ -75,6 +79,10 @@ model-artifacts-schema:
 	bash ./scripts/training_upload_schema.sh
 	@echo "Uploaded ml artifacts db schema! :3"
 
+# Create minikube service
+minikube-tunnel:
+	minikube service gateway-api-nginx -n nginx-gateway
+	
 # Setup Headlamp monitoring
 headlamp:
 	bash ./scripts/headlamp_monitoring.sh
