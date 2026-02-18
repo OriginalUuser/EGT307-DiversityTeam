@@ -31,4 +31,7 @@ response = requests.post(url=MONITORING_URL, json=payload)
 print(f"Status code:    {response.status_code}")
 print(f"Response body:  {response.text}")
 
-sys.exit(0)
+if response.status_code == 200:
+    sys.exit(0)
+else:
+    sys.exit(1)

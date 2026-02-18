@@ -5,7 +5,7 @@ import requests
 
 import pandas as pd
 from sqlalchemy import create_engine
-from .reporting import generate_report, is_data_drift
+from reporting import generate_report, is_data_drift
 from evidently.ui.workspace import RemoteWorkspace
 
 import procrastinate
@@ -34,7 +34,9 @@ TRAINING_URL = f"http://{TRAINING_DNS}:{TRAINING_PORT}"
 app = procrastinate.App(connector=AiopgConnector(dsn=DATABASE_URI)) 
 
 # Connect to the remote workspace for updating the monitoring dashboards
-WORKSPACE_URL = os.getenv("WORKSPACE_URL")
+WORKSPACE_DNS = os.getenv("WORKSPACE_DNS")
+WORKSPACE_PORT = os.getenv("WORKSPACE_PORT")
+WORKSPACE_URL = f"http://{WORKSPACE_DNS}:{WORKSPACE_PORT}"
 ws = None
 for retry in range(10):
     try:
@@ -103,3 +105,6 @@ async def generate_report(
         logger.info(f"Response: {response.text}") 
     else:
         logger.info(f"No data drift detected")
+
+if __name__ == "__main__":
+    app.run_worker_async()

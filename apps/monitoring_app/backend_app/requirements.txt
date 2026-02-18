@@ -4,3 +4,4 @@ SQLAlchemy==2.0.46
 psycopg2-binary==2.9.11
 psycopg[binary]>=3.3.2
 procrastinate>=3.7.2
+aiopg>=1.4.0

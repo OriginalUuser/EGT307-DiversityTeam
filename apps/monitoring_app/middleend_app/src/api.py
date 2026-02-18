@@ -33,10 +33,10 @@ async def queue_generation(task: Evaluate) -> dict:
     logger.info(f"Queuing Task {batch_id}: Create report for {task.table_name}")
     await app.configure_task(name="generate_report").defer_async(
         batch_id=batch_id,
-        **task
+        **task.model_dump()
     )
     logger.info(f"Batch {batch_id} successfully dispatched to Procrastinate.")
-    return {"batch_id": batch_id, **task}
+    return {"batch_id": batch_id, **task.model_dump()}
 
 @api.post("/", status_code=status.HTTP_200_OK)
 async def generate_report(config: Evaluate) -> dict:
