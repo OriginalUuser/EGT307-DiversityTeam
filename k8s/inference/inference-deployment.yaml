@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inference-deploy
+  namespace: inference-ns
+  labels:
+    app: inference-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inference-app
+  template:
+    metadata:
+      labels:
+        app: inference-app
+    spec:
+      containers:
+      - name: inference-pipeline
+        image: docker.io/matthewchristophertanmingwen/divteam_inference:0.2
+        command: ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8090" ]
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+          requests:
+            memory: "256Mi"
+            cpu: "50m"
+        ports:
+        - containerPort: 8090
+        env:
+          - name: DB_DATABASE_DNS
+            valueFrom:
+              configMapKeyRef:
+                name: inference-config
+                key: DB_DATABASE_DNS
+          - name: ML_DATABASE_DNS
+            valueFrom:
+              configMapKeyRef:
+                name: inference-config
+                key: ML_DATABASE_DNS
+          - name: DATABASE_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: inference-config
+                key: DATABASE_PORT
+          - name: DB_POSTGRES_PASS
+            valueFrom:
+              secretKeyRef:
+                name: mirror-postgres-credentials-admin
+                key: password
+          - name: ML_POSTGRES_PASS
+            valueFrom:
+              secretKeyRef:
+                name: mirror-postgres-credentials-ml-admin
+                key: password
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: inference-service
+  namespace: inference-ns
+spec:
+  selector:
+    app: inference-app
+  ports:
+  - name: monitor-frontend-port
+    port: 85
+    targetPort: 8090
+    protocol: TCP
+
+---
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: inference-app-hpa
+  namespace: inference-ns
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: inference-deploy
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 75
