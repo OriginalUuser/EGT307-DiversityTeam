@@ -57,8 +57,6 @@ app = FastAPI()
 # Define payload
 class Evaluate(BaseModel):
     table_name: str
-    target_col: str
-    batch_id: str
     window_size: int = 10
     horizon: int = 24
 
@@ -69,8 +67,6 @@ def post_root(payload: Evaluate):
         sensor_conn=db_conn,
         ml_conn=ml_conn,
         table_name=payload.table_name,
-        target_col=payload.target_col,
-        batch_id=payload.batch_id,
         window_size=payload.window_size,
         horizon=payload.horizon
     )
