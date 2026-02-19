@@ -75,6 +75,28 @@ def get_data(table_name, refresh_counter):
     )
 
 # -------------------------------
+# Cached forecasted data retrieval
+# -------------------------------
+
+@st.cache_data(ttl=300)
+def get_real_forecast(selected_page):
+    path = "/app/data/all_ponds_forecast.json"
+    if not os.path.exists(path):
+        return pd.DataFrame()
+    
+    try:
+        with open(path, 'r') as f:
+            data = json.load(f)
+        df = pd.DataFrame(data)
+        df['created_at'] = pd.to_datetime(df['created_at'])
+        # Filter by the pond name (the page name in your app)
+        return df[df['pond_name'] == selected_page]
+    except Exception as e:
+        st.error(f"Error reading forecast file: {e}")
+        return pd.DataFrame()
+        
+
+# -------------------------------
 # Production window logic
 # -------------------------------
 def get_window_data(df, state_key=None):
@@ -259,7 +281,11 @@ else:
     df = get_data(POND_FILES[selected_page], refresh_counter)\
             .sort_values("created_at").reset_index(drop=True)
 
-    window_df, forecast_df = get_window_data(df)
+    #window_df, forecast_df = get_window_data(df)
+
+    window_df = df.copy()
+    forecast_df = get_real_forecast(selected_page)
+
     latest = window_df.iloc[-1]
 
     st.subheader("📊 Latest Readings")

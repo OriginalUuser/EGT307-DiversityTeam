@@ -1,5 +1,5 @@
-# DATA VISUALISATION
-# Retreives Data from Database and visualises them using meaningful graphs
+# INFERENCE RETRIEVAL
+# Requests inference from inference pipeline to display in the dashboard
 
 FROM python:3.12-slim-bookworm
 
@@ -10,14 +10,10 @@ COPY requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy entire project
-COPY . .
-
 # Create the data directory where the PVC will be mounted
 RUN mkdir -p /app/data
 
 RUN chmod 777 /app/data
 
-# Expose Kubernetes port
-EXPOSE 8080
-
+# Copy entire project
+COPY . .
