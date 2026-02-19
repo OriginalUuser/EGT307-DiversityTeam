@@ -21,12 +21,15 @@ def makeInference(
     # Retrieve columns
     with sensor_conn.cursor() as cursor:
         cursor.execute("""
-            SELECT *
+            SELECT column_name
             FROM INFORMATION_SCHEMA.COLUMNS
-            WHERE TABLE_NAME = N'%s'
-        """, (table_name))
-        columns = cursor.fetchone()
-    
+            WHERE TABLE_NAME = N%s
+        """, (table_name,))
+        result = cursor.fetchall()
+        
+    columns = list({row[0] for row in result} - {"created_at", "entry_id"})
+
+    # columns = ["temperature", "turbidity", "dissolved_oxygen", "ph", "ammonia", "nitrate", "population", "fish_length", "fish_weight"]
     out = pd.DataFrame()
     
     # Predict over all columns
@@ -41,12 +44,14 @@ def makeInference(
                 LIMIT 1
             """, (table_name, target_col))
             row = cursor.fetchone()
+            print(f"{row} retrieved for {table_name}, {target_col}")
 
         if not row:
-            raise RuntimeError("No trained model found.")
+            # raise RuntimeError("No trained model found.")
+            print(f"No trained model found for {table_name} and {target_col}.")
+            continue
 
-        model_bytes, weights_json, time_end = row
-        weights = json.loads(weights_json)
+        model_bytes, weights, time_end = row
         scaler_min = float(weights["scaler_min"])
         scaler_scale = float(weights["scaler_scale"])
 

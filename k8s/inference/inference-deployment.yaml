@@ -17,7 +17,8 @@ spec:
     spec:
       containers:
       - name: inference-pipeline
-        image: docker.io/matthewchristophertanmingwen/divteam_inference:0.3
+        image: docker.io/matthewchristophertanmingwen/divteam_inference:1.5
+        # imagePullPolicy: Never
         command: ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8090" ]
         resources:
           limits:
@@ -91,4 +92,4 @@ spec:
       name: cpu
       target:
         type: Utilization
-        averageUtilization: 75
+        averageUtilization: 90

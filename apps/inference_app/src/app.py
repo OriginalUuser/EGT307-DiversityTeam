@@ -14,7 +14,7 @@ from fastapi import FastAPI, status
 import os
 import psycopg2
 
-from inference import makeInference
+from .inference import makeInference
 
 # Connect to database
 DB_POSTGRES_PASS = os.getenv("DB_POSTGRES_PASS")
@@ -34,7 +34,11 @@ db_conn = psycopg2.connect(
     password=DB_POSTGRES_PASS,
     host=DB_DATABASE_DNS,
     port=DATABASE_PORT,
-    database=DB_NAME
+    database=DB_NAME,
+    keepalives=1,
+    keepalives_idle=20,   # Seconds of idle time before sending a keepalive probe
+    keepalives_interval=10, # Seconds between keepalive probes
+    keepalives_count=15    # Number of probes before considering the connection dead
 )
 db_conn.autocommit = True
 
@@ -47,7 +51,11 @@ ml_conn = psycopg2.connect(
     password=ML_POSTGRES_PASS,
     host=ML_DATABASE_DNS,
     port=DATABASE_PORT,
-    database=ML_NAME
+    database=ML_NAME,
+    keepalives=1,
+    keepalives_idle=20,   # Seconds of idle time before sending a keepalive probe
+    keepalives_interval=10, # Seconds between keepalive probes
+    keepalives_count=15    # Number of probes before considering the connection dead
 )
 ml_conn.autocommit = True
 
