@@ -17,9 +17,9 @@ spec:
     spec:
       containers:
       - name: dashboard-pipeline
-        image: docker.io/crapulous/main_repo:8
-        #imagePullPolicy: Never                
-        command: ["streamlit", "run", "src/dashboard.py", "--server.port=8080", "--server.address=0.0.0.0", "--server.baseUrlPath=dashboard", "--server.headless=true", "--browser.gatherUsageStats=false"]
+        image: dashboard:v1              #docker.io/crapulous/main_repo:8
+        imagePullPolicy: Never                
+        command: ["streamlit", "run", "src/dashboard.py", "--server.port=8080", "--server.address=0.0.0.0", "--server.headless=true", "--browser.gatherUsageStats=false"]
         resources:
           limits:
             memory: "512Mi"
@@ -70,6 +70,13 @@ spec:
               secretKeyRef:
                 name: mirror-postgres-credentials-admin
                 key: password
+        volumeMounts:
+        - name: inference-storage
+          mountPath: /app/data  
+      volumes:
+      - name: inference-storage
+        persistentVolumeClaim:
+          claimName: shared-data-pvc    
 
 ---
 

@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: inference-scheduled-job
+  namespace: dashboard-ns
+spec:
+  schedule: "*/6 * * * *"  # Runs every minute for testing
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: inference-engine
+            image: get_inference:v1  # The image with your Python loop
+            imagePullPolicy: Never
+            command: ["python", "src/get_inference.py"]
+            env:
+            - name: POND
+              valueFrom:
+                configMapKeyRef:
+                  name: dashboard-config
+                  key: POND
+            volumeMounts:
+            - name: inference-storage
+              mountPath: /app/data
+          restartPolicy: OnFailure
+          volumes:
+          - name: inference-storage
+            persistentVolumeClaim:
+              claimName: shared-data-pvc
