@@ -33,24 +33,16 @@ jobs:
       - name: Set up k8s cluster
         run: |
           make
-          make upload-data
+          make upload-data model-artifacts-schema
         env:
           POSTGRES_PASS: ${{ secrets.POSTGRES_PASS }}
 
-      - name: Uploading CSV data to database cluster
+      - name: Opening port for database testing
         run: |
           # Open tunnels
           kubectl port-forward svc/sensor-db-ha-rw 5432:5432 -n database-ns &
           for i in {1..30}; do
               if nc -z 127.0.0.1 5432; then
-                  echo "Tunnel is open!"
-                  break
-              fi
-              sleep 0.5
-          done
-          kubectl port-forward svc/ml-artifacts-db-rw 5433:5432 -n ml-artifacts-db-ns &
-          for i in {1..30}; do
-              if nc -z 127.0.0.1 5433; then
                   echo "Tunnel is open!"
                   break
               fi
@@ -67,6 +59,17 @@ jobs:
           password: ${{ secrets.POSTGRES_PASS }}
           db: ${{ secrets.SENSOR_DB_NAME }}
           ssl: 'false'
+
+      - name: Opening port for ML database testing
+        run: |
+          kubectl port-forward svc/ml-artifacts-db-rw 5433:5432 -n ml-artifacts-db-ns &
+          for i in {1..30}; do
+              if nc -z 127.0.0.1 5433; then
+                  echo "Tunnel is open!"
+                  break
+              fi
+              sleep 0.5
+          done
 
       - name: Testing ml artifact database cluster
         uses: yakubique/query-postgresql@v1.2
