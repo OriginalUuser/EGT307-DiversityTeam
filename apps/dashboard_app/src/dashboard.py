@@ -25,8 +25,6 @@ POND_FILES = json.loads(pond_raw)
 sensors_raw = os.getenv("SENSORS","{}")
 SENSORS = json.loads(sensors_raw)
 
-WINDOW_SIZE = 100
-FORECAST_HORIZON = 10
 TREND_EPSILON = 0.01
 
 # -------------------------------
@@ -96,24 +94,6 @@ def get_real_forecast(selected_page):
         return pd.DataFrame()
         
 
-# -------------------------------
-# Production window logic
-# -------------------------------
-def get_window_data(df, state_key=None):
-    """
-    Returns (window_df, forecast_df)
-    Production mode:
-    - First 100 rows = actual data
-    - Next 10 rows = forecast
-    """
-    if len(df) < WINDOW_SIZE + FORECAST_HORIZON:
-        return df.iloc[:WINDOW_SIZE], df.iloc[WINDOW_SIZE:]
-
-    window_df = df.iloc[:WINDOW_SIZE]
-    forecast_df = df.iloc[WINDOW_SIZE:WINDOW_SIZE + FORECAST_HORIZON]
-
-    return window_df, forecast_df
-
 # =====================================================
 # MAIN PAGE — LATEST VALUES + TRENDS
 # =====================================================
@@ -124,38 +104,105 @@ if selected_page == "Main Page":
         st.markdown(f"## 🌱 {pond_name}")
 
         df = get_data(table_name, refresh_counter).sort_values("created_at").reset_index(drop=True)
-        window_df, forecast_df = get_window_data(df)
+        forecast_df = get_real_forecast(pond_name)
 
-        latest = window_df.iloc[-1]
-        future = forecast_df.iloc[-1]
+        if not df.empty:
+            latest = df.iloc[-1]
+            latest_time = latest["created_at"]
+            
+            # Logic to find the next valid forecast point
+            next_prediction = None
+            if not forecast_df.empty:
+                future_points = forecast_df[forecast_df["created_at"] > latest_time]
+                if not future_points.empty:
+                    next_prediction = future_points.iloc[0]
 
-        cols = st.columns(len(SENSORS))
+            cols = st.columns(len(SENSORS))
 
-        for i, (label, col) in enumerate(SENSORS.items()):
-            delta = future[col] - latest[col]
-
-            if delta > TREND_EPSILON:
-                arrow, color = "🔺", "green"
-            elif delta < -TREND_EPSILON:
-                arrow, color = "🔻", "red"
-            else:
+            for i, (label, col) in enumerate(SENSORS.items()):
+                # Default state
                 arrow, color = "➖", "gray"
 
-            with cols[i]:
-                st.markdown(
-                    f"""
-                    <div style="text-align:center;">
-                        <div style="font-size:14px; font-weight:600;">{label}</div>
-                        <div style="font-size:22px;">
-                            {latest[col]:.2f}
-                            <span style="color:{color};">{arrow}</span>
+                if next_prediction is not None and col in next_prediction:
+                    delta = next_prediction[col] - latest[col]
+
+                    if delta > TREND_EPSILON:
+                        arrow, color = "🔺", "green"
+                    elif delta < -TREND_EPSILON:
+                        arrow, color = "🔻", "red"
+                    else:
+                        arrow, color = "➖", "gray"
+
+                with cols[i]:
+                    # Using the original HTML/Markdown approach to prevent delta conflicts
+                    st.markdown(
+                        f"""
+                        <div style="text-align:center;">
+                            <div style="font-size:14px; font-weight:600; color:#555;">{label}</div>
+                            <div style="font-size:22px;">
+                                {latest[col]:.2f}
+                                <span style="color:{color};">{arrow}</span>
+                            </div>
                         </div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                        """,
+                        unsafe_allow_html=True
+                    )
+        else:
+            st.info(f"Waiting for data from {pond_name}...")
 
         st.markdown("---")
+
+    # for pond_name, table_name in POND_FILES.items():
+    #     st.markdown(f"## 🌱 {pond_name}")
+
+    #     df = get_data(table_name, refresh_counter).sort_values("created_at").reset_index(drop=True)
+    #     forecast_df = get_real_forecast(pond_name)
+
+    #     if not df.empty:
+    #         latest = df.iloc[-1]
+    #         latest_time = latest["created_at"]
+            
+    #         # 1. Filter forecast to ONLY look at points in the future
+    #         # This handles the "catch up" issue.
+    #         future_points = forecast_df[forecast_df["created_at"] > latest_time]
+
+    #         if not future_points.empty:
+    #             # 2. Get the NEXT closest forecasted point
+    #             next_prediction = future_points.iloc[0] 
+    #             has_forecast = True
+    #         else:
+    #             has_forecast = False
+
+    #         cols = st.columns(len(SENSORS))
+
+    #         for i, (label, col) in enumerate(SENSORS.items()):
+    #             arrow, color = "➖", "gray"
+
+    #             if has_forecast and col in next_prediction:
+    #                 # 3. Compare current reality to the immediate next prediction
+    #                 delta = next_prediction[col] - latest[col]
+
+    #                 if delta > TREND_EPSILON:
+    #                     arrow, color = "🔺", "green"
+    #                 elif delta < -TREND_EPSILON:
+    #                     arrow, color = "🔻", "red"
+
+    #             with cols[i]:
+    #                 st.markdown(
+    #                     f"""
+    #                     <div style="text-align:center;">
+    #                         <div style="font-size:14px; font-weight:600;">{label}</div>
+    #                         <div style="font-size:22px;">
+    #                             {latest[col]:.2f}
+    #                             <span style="color:{color};">{arrow}</span>
+    #                         </div>
+    #                     </div>
+    #                     """,
+    #                     unsafe_allow_html=True
+    #                 )
+
+    #     st.markdown("---")
+
 
 # =====================================================
 # AGGREGATE OVERVIEW PAGE
@@ -168,13 +215,14 @@ elif selected_page == "Aggregate Overview":
         df = get_data(table_name, refresh_counter).sort_values("created_at").reset_index(drop=True)
         pond_dfs.append(df)
 
-    base_df, _ = get_window_data(pond_dfs[0])
-    time_index = base_df["created_at"]
+    #base_df, _ = get_window_data(pond_dfs[0])
+    time_index = pond_dfs[0]["created_at"]
 
     for label, col in SENSORS.items():
         aligned = []
         for df in pond_dfs:
-            aligned.append(df.loc[base_df.index, col].values)
+            aligned.append(df.loc[df.index, col].values)
+            #aligned.append(df[col].values)
 
         agg_df = pd.DataFrame(aligned).T
         stats_df = pd.DataFrame({
@@ -228,7 +276,6 @@ else:
     # 📡 Sidebar Report Trigger (Pond-Specific)
     # -------------------------------
     with st.sidebar.expander(f"🛠️ Run Analysis for {selected_page}", expanded=True):
-        #st.write(f"**Target Table:** `{current_table}`")
         
         # User configures columns and range
         selected_sensor_labels = st.multiselect(
@@ -272,21 +319,12 @@ else:
 
 
 
-
-
-
-
-
-
     df = get_data(POND_FILES[selected_page], refresh_counter)\
             .sort_values("created_at").reset_index(drop=True)
 
-    #window_df, forecast_df = get_window_data(df)
-
-    window_df = df.copy()
     forecast_df = get_real_forecast(selected_page)
 
-    latest = window_df.iloc[-1]
+    latest = df.iloc[-1]
 
     st.subheader("📊 Latest Readings")
     cols = st.columns(3)
@@ -296,33 +334,29 @@ else:
 
     st.subheader("📈 Sensor Forecasts")
     for label, col in SENSORS.items():
-        hist_df = window_df[["created_at", col]].rename(columns={"created_at": "date"})
-        fut_df = forecast_df[["created_at", col]].rename(columns={"created_at": "date"})
-
-        chart = (
-            alt.Chart(hist_df).mark_line().encode(
-                x=alt.X("date:T", title="Date"),
-                y=alt.Y(f"{col}:Q", title=label)
-            )
-            + alt.Chart(hist_df).mark_point(opacity=0).encode(
-                x=alt.X("date:T", title="Date"),
-                y=alt.Y(f"{col}:Q", title=label),
-                tooltip=[alt.Tooltip("date:T", title="Date"),
-                        alt.Tooltip(f"{col}:Q", title=label)]
-            )
-            + alt.Chart(fut_df).mark_line(strokeDash=[6, 6], color="#FF9800").encode(
-                x=alt.X("date:T", title="Date"),
-                y=alt.Y(f"{col}:Q", title=label)
-            )
-            + alt.Chart(fut_df).mark_point(color="#FF9800").encode(
-                x=alt.X("date:T", title="Date"),
-                y=alt.Y(f"{col}:Q", title=label),
-                tooltip=[alt.Tooltip("date:T", title="Date"),
-                        alt.Tooltip(f"{col}:Q", title=label)]
-            )
-        ).properties(
-            height=320,
-            title=f"{label} Graph"
+        hist_df = df[["created_at", col]].rename(columns={"created_at": "date"})
+        
+        # Base historical chart
+        chart = alt.Chart(hist_df).mark_line().encode(
+            x=alt.X("date:T", title="Date"),
+            y=alt.Y(f"{col}:Q", title=label)
+        ) + alt.Chart(hist_df).mark_point(opacity=0).encode(
+            x="date:T", y=f"{col}:Q", 
+            tooltip=["date:T", f"{col}:Q"]
         )
 
-        st.altair_chart(chart, use_container_width=True)
+        # Only add the forecast layers if data actually exists
+        if not forecast_df.empty and col in forecast_df.columns:
+            fut_df = forecast_df[["created_at", col]].rename(columns={"created_at": "date"})
+            
+            forecast_layers = alt.Chart(fut_df).mark_line(strokeDash=[6, 6], color="#FF9800").encode(
+                x="date:T",
+                y=f"{col}:Q"
+            ) + alt.Chart(fut_df).mark_point(color="#FF9800").encode(
+                x="date:T",
+                y=f"{col}:Q",
+                tooltip=["date:T", f"{col}:Q"]
+            )
+            chart += forecast_layers
+
+        st.altair_chart(chart.properties(height=320, title=f"{label} Graph"), use_container_width=True)
