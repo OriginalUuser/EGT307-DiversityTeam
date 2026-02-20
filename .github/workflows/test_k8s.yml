@@ -60,16 +60,16 @@ jobs:
           db: ${{ secrets.SENSOR_DB_NAME }}
           ssl: 'false'
 
-      - name: Opening port for ML database testing
-        run: |
-          kubectl port-forward svc/ml-artifacts-db-rw 5433:5432 -n ml-artifacts-db-ns &
-          for i in {1..30}; do
-              if nc -z 127.0.0.1 5433; then
-                  echo "Tunnel is open!"
-                  break
-              fi
-              sleep 0.5
-          done
+      # - name: Opening port for ML database testing
+      #   run: |
+      #     kubectl port-forward svc/ml-artifacts-db-rw 5433:5432 -n ml-artifacts-db-ns &
+      #     for i in {1..30}; do
+      #         if nc -z 127.0.0.1 5433; then
+      #             echo "Tunnel is open!"
+      #             break
+      #         fi
+      #         sleep 0.5
+      #     done
 
       - name: Testing ml artifact database cluster
         uses: yakubique/query-postgresql@v1.2
