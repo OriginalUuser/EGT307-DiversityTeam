@@ -151,7 +151,7 @@ jobs:
 
       - name: Testing training deployment, send curl to API
         run: |
-          kubectl wait --for=condition=Ready pod -l app=inference-app --namespace=ml-application-ns --timeout=240s
+          kubectl wait --for=condition=Ready pod -l app=ml-trainer --namespace=ml-application-ns --timeout=240s
 
           # Open tunnel
           kubectl port-forward svc/ml-api-service 8004:80 -n ml-application-ns &
@@ -168,7 +168,7 @@ jobs:
 
       - name: Testing inference deployment, send curl to API
         run: |
-          kubectl wait --for=condition=Ready pod -l app=ml-trainer --namespace=inference-ns --timeout=240s
+          kubectl wait --for=condition=Ready pod -l app=inference-app --namespace=inference-ns --timeout=240s
 
           # Open tunnel
           kubectl port-forward svc/inference-service 8005:85 -n ml-application-ns &
