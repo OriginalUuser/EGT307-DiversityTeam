@@ -151,7 +151,7 @@ jobs:
 
       - name: Testing training deployment, send curl to API
         run: |
-          kubectl wait --for=condition=Ready pod -l app=ml-trainer --namespace=ml-application-ns --timeout=240s
+          kubectl wait --for=condition=Ready pod -l app=inference-app --namespace=ml-application-ns --timeout=240s
 
           # Open tunnel
           kubectl port-forward svc/ml-api-service 8004:80 -n ml-application-ns &
@@ -165,4 +165,21 @@ jobs:
 
           # Curl API to see if it exists
           curl http://127.0.0.1:8004
+
+      - name: Testing inference deployment, send curl to API
+        run: |
+          kubectl wait --for=condition=Ready pod -l app=ml-trainer --namespace=inference-ns --timeout=240s
+
+          # Open tunnel
+          kubectl port-forward svc/inference-service 8005:85 -n ml-application-ns &
+          for i in {1..30}; do
+              if nc -z 127.0.0.1 8005; then
+                  echo "Tunnel is open!"
+                  break
+              fi
+              sleep 0.5
+          done
+
+          # Curl API to see if it exists
+          curl http://127.0.0.1:8005
       
