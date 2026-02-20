@@ -67,7 +67,6 @@ spec:
   selector:
     app: inference-app
   ports:
-  - name: monitor-frontend-port
     port: 85
     targetPort: 8090
     protocol: TCP
