@@ -23,6 +23,13 @@ jobs:
       - name: Verify cluster setup correctly
         run: kubectl get pods -A
 
+      - name: Create env file for Makefile to work
+        run: |
+          cat <<EOF > .env
+          POSTGRES_PASS=${{ secrets.POSTGRES_PASS }}
+          ML_POSTGRES_PASS=${{ secrets.ML_POSTGRES_PASS }}
+          EOF
+
       - name: Set up k8s cluster
         run: |
           make
