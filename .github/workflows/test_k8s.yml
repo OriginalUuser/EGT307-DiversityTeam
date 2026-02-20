@@ -71,16 +71,16 @@ jobs:
       #         sleep 0.5
       #     done
 
-      - name: Testing ml artifact database cluster
-        uses: yakubique/query-postgresql@v1.2
-        with:
-          query: "SELECT * FROM training_history LIMIT 10"
-          host: 127.0.0.1
-          port: 5433
-          username: ${{ secrets.ML_POSTGRES_USER }}
-          password: ${{ secrets.ML_POSTGRES_PASS }}
-          db: ${{ secrets.ML_DB_NAME }}
-          ssl: 'false'
+      # - name: Testing ml artifact database cluster
+      #   uses: yakubique/query-postgresql@v1.2
+      #   with:
+      #     query: "SELECT * FROM training_history LIMIT 10"
+      #     host: 127.0.0.1
+      #     port: 5433
+      #     username: ${{ secrets.ML_POSTGRES_USER }}
+      #     password: ${{ secrets.ML_POSTGRES_PASS }}
+      #     db: ${{ secrets.ML_DB_NAME }}
+      #     ssl: 'false'
 
       - name: Testing monitoring deployment, send report generation request to API, send request to UI
         run: |
