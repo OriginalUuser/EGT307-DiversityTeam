@@ -12,7 +12,6 @@ all: \
 	setup-monitoring \
 	setup-ingestion \
 	setup-training \
-	training-cronjob \
 	setup-dashboard \
 	setup-gatewayapi
 	
