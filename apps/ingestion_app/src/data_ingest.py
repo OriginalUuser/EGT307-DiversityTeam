@@ -9,7 +9,6 @@ from typing import Any
 
 expectedSchema = {
     "created_at":           pd.Timestamp,
-    "entry_id":             int,
     "temperature":          float,
     "turbidity":            float,
     "dissolved_oxygen":     float,
@@ -23,7 +22,6 @@ expectedSchema = {
 
 imputationValues = {
     "created_at":           pd.Timestamp('2026-1-1'),
-    "entry_id":             0,
     "temperature":          27.0,
     "turbidity":            100,
     "dissolved_oxygen":     25.0,
@@ -145,6 +143,10 @@ def checkPayloadSchema(payload: dict) -> tuple[dict[str:Any], set[str], dict[str
 
     # Initial declaration of payload variable to format later
     formattedPayload = payload
+
+    # Remove entry_id from payload if exists, this should not be specified
+    if "entry_id" in formattedPayload:
+        formattedPayload.pop('entry_id', None)
 
     # Check Columns Present
     columnsAllPresent, missingColumns = checkColumnsPresent(payload)

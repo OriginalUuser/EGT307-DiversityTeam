@@ -1,6 +1,7 @@
 import pandas as pd
 import random
 import time
+import requests
 
 class ColumnData:
     """
@@ -15,28 +16,28 @@ class ColumnData:
 
 created_at      = ColumnData('created_at', pd.Timestamp)
 entry_id        = ColumnData('entry_id', int)
-TEMPERATURE     = ColumnData('TEMPERATURE', float, 25, 5)
-TURBIDITY       = ColumnData('TURBIDITY', int, 50, 50)
-DISOLVED_OXYGEN = ColumnData('DISOLVED OXYGEN', float, 50, 50)
-pH              = ColumnData('pH', float, 50, 50)
-AMMONIA         = ColumnData('AMMONIA', float, 50, 50)
-NITRATE         = ColumnData('NITRATE', int, 50, 50)
-Population      = ColumnData('Population', int, 50, 50)
-Length          = ColumnData('Length', float, 50, 50)
-Weight          = ColumnData('Weight', float, 50, 50)
+temperature     = ColumnData('temperature', float, 25, 5)
+turbidity       = ColumnData('turbidity', int, 50, 50)
+dissolved_oxygen= ColumnData('dissolved_oxygen', float, 50, 50)
+ph              = ColumnData('ph', float, 50, 50)
+ammonia         = ColumnData('ammonia', float, 50, 50)
+nitrate         = ColumnData('nitrate', int, 50, 50)
+population      = ColumnData('population', int, 50, 50)
+fish_length     = ColumnData('fish_length', float, 50, 50)
+fish_weight     = ColumnData('fish_weight', float, 50, 50)
 
 columns = [
     created_at,
     entry_id,     
-    TEMPERATURE,
-    TURBIDITY,
-    DISOLVED_OXYGEN,
-    pH,
-    AMMONIA,
-    NITRATE,
-    Population,
-    Length,
-    Weight
+    temperature,
+    turbidity,
+    dissolved_oxygen,
+    ph,
+    ammonia,
+    nitrate,
+    population,
+    fish_length,
+    fish_weight
 ]
 
 class Pond:
@@ -66,7 +67,7 @@ class Pond:
         if columnData.name == 'created_at':
             delta = self.entry_id * pd.Timedelta(milliseconds=self.freq)
             
-            return self.startTime + delta
+            return str(self.startTime + delta)
         
         if columnData.name == 'entry_id':
             self.entry_id += 1
@@ -93,20 +94,14 @@ class Pond:
         return columnData.dataType(output)
 
     def compileRowData(self) -> list:
-        rowData = []
-        for col in columns:
-            rowData.append(self.generateColumnData(col))
-
+        rowData = {col.name: self.generateColumnData(col) for col in columns}
+        rowData["entry_id"] = "default"
         return rowData
     
     def dataStream(self):
         while True:
             out = self.compileRowData()
-            print(out)
-            # yield out
-            # yield self.compileRowData()
-            time.sleep(self.freq/1000)
-            
+            yield out            
             
 
 
@@ -123,19 +118,19 @@ call class func to generate data
 let darren sort out the sending of raw data to database/straight to ingestion
 """
 
-pond1 = Pond(500, 0)
-# print(next(pond1.pondDataStream()))
-# print(next(pond1.pondDataStream()))
-
-# while True:
-    # print(pond1.pondDataStream())
+if __name__ == "__main__":
+    pond1 = Pond(500, 0)
+    # print(next(pond1.pondDataStream()))
     # print(next(pond1.pondDataStream()))
 
-# print(next(pond1.pondDataStream()))
-# time.sleep(5)
-# print(next(pond1.pondDataStream()))
-# asyncio.create_task(pond1.dataStream())
-pond1.dataStream()
-time.sleep(50)
-# pond2.dataStream()
+    # while True:
+        # print(pond1.pondDataStream())
+        # print(next(pond1.pondDataStream()))
 
+    # print(next(pond1.pondDataStream()))
+    # time.sleep(5)
+    # print(next(pond1.pondDataStream()))
+    # asyncio.create_task(pond1.dataStream())
+    pond1.dataStream()
+    time.sleep(50)
+    # pond2.dataStream()
