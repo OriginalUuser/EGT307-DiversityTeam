@@ -67,7 +67,7 @@ spec:
   selector:
     app: inference-app
   ports:
-    port: 85
+  - port: 85
     targetPort: 8090
     protocol: TCP
 
