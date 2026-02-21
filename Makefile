@@ -5,8 +5,6 @@ SHELL := /bin/bash
 include .env
 export $(shell sed 's/=.*//' .env)
 
-
-
 # Pipelines!
 all: \
 	minikube-installations \
@@ -15,9 +13,9 @@ all: \
 	setup-ingestion \
 	setup-training \
 	setup-dashboard \
-	setup-gatewayapi \
 	setup-inference \
-	headlamp
+	headlamp \
+	setup-gatewayapi
 	
 rebuild: clean all
 
@@ -99,7 +97,7 @@ minikube-tunnel:
 headlamp:
 	bash ./scripts/headlamp_monitoring.sh
 	@echo "Started Headlamp! ⋆｡°✩"
-	kubectl wait --for=condition=Ready pod -l k8s-app=headlamp -n headlamp-ns --timeout=120s
+	kubectl wait --for=condition=Ready pod -l k8s-app=headlamp -n headlamp-ns --timeout=-1s
 	@echo "Headlamp pod is ready! ⋆｡°✩"
 
 headlamp-service:
