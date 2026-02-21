@@ -1,3 +1,5 @@
+# AquaBoard
+
 # Project Members
 
 ### 231725Z - Darren Foo Tun Wei
@@ -26,31 +28,30 @@
 
 # Project Objectives
 
-# Execution Instructions
-1. Requires docker & minikube to run (This is for you, Matthew Christopher Tan Ming Wen, admin number: 230649F <3)
+The goal of AquaBoard is the consolidation of real-time sensor data streams in aquaponics systems.
 
-## Needed packages:
+With the onset of Singapore's goal of self-sufficiency, vertical farming methods such as aquaponics and hydroponics are increasingly relevant. This is due to the lack of land area for traditional farming methods. Hence, this project aims to supplement current and future vertical farming infrastructure through the data science. Namely, allowing for the consolidation, presentation, and analysis of data.
+
+This project leverages Kubernetes architecture to create a scalable, available, and fault tolerant unerlying system.
+
+# Execution Instructions
+
+## Step 1: Prerequisite software
+
+Requires docker & minikube to run to host the kubernetes cluster.
+
+## Step 2: Installation of packages
 
 LINUX
-1. Install packages `sudo apt install postgresql`
-2. If needed, convert bash file formats: `sudo apt install dos2unix` -> `dos2unix path/to/bash-file`
+1. Install required packages `sudo apt install postgresql build-essential dos2unix`
 
 MAC:
 1. Install packages `brew install gettext postgresql`
+2. Run `xcode-select --install`
 
-## How to set up the database
+## Step 3: Setting up environment variables
 
-1. Run `export POSTGRES_PASS=password` to set up the password that the database will use (does not matter what the password is)
-1. Run `bash ./scripts/database_k8s_setup.sh`
-2. Once the cluster has finished setting up (pods are running), Run `kubectl port-forward svc/sensor-db-ha-rw 5432:5432 -n database-ns`
-3. Run `pip install -r db-requirements.txt`
-3. Run `bash ./scripts/dataset_download.sh`
 
-Congratulations, you have started the kubernetes database cluster!!!
-
-Check `test\database.ipynb` for how to access and use the database locally or within the cluster.
-
----
 
 ## Using Makefile to build the application
 
@@ -100,5 +101,6 @@ Refer to [model_inference_example.ipynb](test/model_inference_example.ipynb) on 
 
 
 # Limitations 
+
 
 
