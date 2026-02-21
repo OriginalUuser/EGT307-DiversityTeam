@@ -171,7 +171,7 @@ jobs:
           kubectl wait --for=condition=Ready pod -l app=inference-app --namespace=inference-ns --timeout=240s
 
           # Open tunnel
-          kubectl port-forward svc/inference-service 8005:85 -n ml-application-ns &
+          kubectl port-forward svc/inference-service 8005:85 -n inference-ns &
           for i in {1..30}; do
               if nc -z 127.0.0.1 8005; then
                   echo "Tunnel is open!"
