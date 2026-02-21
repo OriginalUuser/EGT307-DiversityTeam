@@ -5,6 +5,8 @@ SHELL := /bin/bash
 include .env
 export $(shell sed 's/=.*//' .env)
 
+
+
 # Pipelines!
 all: \
 	minikube-installations \
@@ -13,9 +15,13 @@ all: \
 	setup-ingestion \
 	setup-training \
 	setup-dashboard \
-	setup-gatewayapi
+	setup-gatewayapi \
+	setup-inference \
+	headlamp
 	
 rebuild: clean all
+
+with-tunnel: all minikube-tunnel
 
 # --- Minikube! ---
 # Build Minikube
@@ -35,6 +41,9 @@ minikube-installations:
 # Setup: Database Cluster
 setup-db:
 	bash ./scripts/database_k8s_setup.sh
+	@echo "Waiting for databases to exist, this may take a while"
+	kubectl wait --for=condition=Ready cluster/sensor-db-ha -n database-ns --timeout=-1s
+	kubectl wait --for=condition=Ready cluster/ml-artifacts-db -n ml-artifacts-db-ns --timeout=-1s
 	@echo "Kubernetes database clusters are up ^^"
 
 # Startup Monitoring Application
@@ -51,6 +60,10 @@ setup-ingestion:
 setup-training:
 	bash ./scripts/training_k8s_setup.sh
 	@echo "Successfully setup training application~ >.<"
+
+setup-inference:
+	bash ./scripts/inference_k8s_setup.sh
+	@echo "Successfully setup inference application. o-o"
 
 # Startup Dashboard Application
 setup-dashboard:
@@ -88,11 +101,17 @@ headlamp:
 	@echo "Started Headlamp! ⋆｡°✩"
 	kubectl wait --for=condition=Ready pod -l k8s-app=headlamp -n headlamp-ns --timeout=120s
 	@echo "Headlamp pod is ready! ⋆｡°✩"
+
+headlamp-service:
 	minikube service headlamp -n headlamp-ns
 
 headlamp-token:
 	@echo "Headlamp token! ⋆˚꩜｡"
 	kubectl -n headlamp-ns get secret headlamp-admin -o go-template='{{.data.token | base64decode}}'
+
+fix-scripts:
+	@echo "Converting all scripts to unix format"
+	dos2unix ./scripts/*.sh
 
 # Tools for convenience
 clean:
