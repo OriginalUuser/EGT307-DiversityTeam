@@ -11,19 +11,45 @@
 
 ```
 .
-├── README.md
-├── deployment
-|   └── Dockerfiles
+├── apps
+│   ├── dashboard_app
+│   │   ├── get_inference
+│   │   │   └── src
+│   │   └── src
+│   ├── database_app
+│   │   ├── dockerfiles
+│   │   └── src
+│   │       └── scripts
+│   │           └── python_helpers
+│   ├── inference_app
+│   │   └── src
+│   ├── ingestion_app
+│   │   └── src
+│   ├── monitoring_app
+│   │   ├── backend_app
+│   │   │   └── src
+│   │   ├── frontend_app
+│   │   ├── job_code
+│   │   │   ├── cronjob
+│   │   │   └── procrastinate_setup
+│   │   └── middleend_app
+│   │       └── src
+│   └── training_app
+│       ├── dockerfiles
+│       └── src
 ├── k8s
-|   └── base
-|       └── k8s manifests
-└── apps
-    └── database_app
-        ├── src
-        |   └── Your source code.py
-        ├── test
-        |   └── Your test code.py
-        └── requirements.txt
+│   ├── dashboard
+│   ├── database
+│   │   ├── ml-artifacts-database
+│   │   └── sensor-database
+│   ├── gateway-api-nginx
+│   ├── headlamp
+│   ├── inference
+│   ├── ingestion
+│   ├── monitoring
+│   └── training
+├── scripts
+└── test
 ```
 
 # Project Objectives
