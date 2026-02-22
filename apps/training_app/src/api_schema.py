@@ -1,3 +1,6 @@
+# Description: Schema for API to interact with the job queue scheduler
+# Formatted and linted with Ruff
+
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
