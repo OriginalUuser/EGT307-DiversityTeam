@@ -151,7 +151,7 @@ Typically, the model will automatically perform data forecasting every hour. How
 # Force run the inference cronjob to trigger model inference
 kubectl create job -n dashboard-ns --from=cronjob/inference-scheduled-job inference-job
 ```
-The model will then perform data inference which can take a few minutes. Additionally, the dashboard may take a few minutes to update since it refreshes the forecasting data only every 10 minutes.
+The model will then perform data inference which can take a few minutes. Additionally, the dashboard may take a few minutes to update since it refreshes the forecasting data only every hour
 
 ## Extra Instructions
 
