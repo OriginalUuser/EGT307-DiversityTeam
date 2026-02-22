@@ -105,3 +105,65 @@ spec:
                   name: ml-config
                   key: db-port
           restartPolicy: OnFailure
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ml-force-train-job
+  namespace: ml-application-ns
+  labels:
+    component: ml-force-train-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: trigger
+        image: 6zekiel/init-model-trainer-and-scheduler:v6
+        command: ["python", "training_scheduler.py"]
+        env:
+        - name: SENSOR_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: mirror-postgres-credentials-admin
+              key: username
+        - name: SENSOR_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mirror-postgres-credentials-admin
+              key: password
+        - name: ML_DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: mirror-postgres-credentials-ml-admin
+              key: username
+        - name: ML_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mirror-postgres-credentials-ml-admin
+              key: password
+        - name: SENSOR_DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: ml-config
+              key: sensor-db-host
+        - name: ML_DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: ml-config
+              key: ml-db-host
+        - name: SENSOR_DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: ml-config
+              key: sensor-db-name
+        - name: ML_DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: ml-config
+              key: ml-db-name
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: ml-config
+              key: db-port
+      restartPolicy: OnFailure
