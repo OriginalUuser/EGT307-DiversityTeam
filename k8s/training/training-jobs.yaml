@@ -118,7 +118,7 @@ spec:
     spec:
       containers:
       - name: trigger
-        image: 6zekiel/init-model-trainer-and-scheduler:v6
+        image: 6zekiel/training_scheduler:v9
         command: ["python", "training_scheduler.py"]
         env:
         - name: SENSOR_DB_USER
