@@ -169,8 +169,29 @@ Given that the databases are based on PostgreSQL, they can be accessed using the
 
 The `k8s\database\sensor-database\postgres-data-loader.yaml` and `k8s\database\sensor-database\postgres-job-configmap.yaml` are used to upload the Kaggle dataset into the database within the Kubernetes cluster via a Job.
  
-## Microservice - MLFlow Training Pipeline
+## Microservice - Training Pipeline
 
+### Explanation
+The training pipeline is designed to be a distributed, asynchronous system responsible to automate the retraining of LSTM (Long Short-Term Memory) models using historical sensor data. in order to maintain high availability and system responsiveness, the architecture decouples the task scheduling from the training workers (A seperate container instance of the training pipeline).
+
+This is achieved with `Procrastinate`, a PostgreSQL-based task queue that manages job distribution. Training jobs can be injected into the task queue via two mechanisms: `cronjobs` or via `API`. Once jobs are queued, independent training workers can execute these jobs. This design, coupled with `HPA` allows the system to scale the number of training workers horizontally if there is an influx of training jobs.
+
+### Functionality
+
+The training pipeline consists of three functional components within the Kubernetes cluster:
+1. Training scheduler (triggered via API/Cronjob): This dispatches training tasks to the queue and can be triggered via `FastAPI` or a `Cronjob`
+2. Training pipeline (Procrastinate workers): Gets jobs from the training queue, performs ETL on sensor data and trains the LSTM timeseries models
+3. ML Artifacts database (PostgreSQL database): Stores model training artifacts for inferenece usage
+
+Inside the cluster, the training workers extracts data from the sensor database via `sensor-db-ha-rw.database-ns:5432` and writes model artifacts to the ML database via `ml-artifacts-db-rw.ml-artifacts-db-ns:5432` (ClusterIPs).
+
+### Kubernetes Orchestration
+
+1. Horizontal Pod Autoscaler (HPA): HPA is utilized to monitor CPU usage. It is utilized to conserve compute resource and allocate more resources for training when required.
+2. Database Schema upload (job): The kubernetes job `ml-db-setup` is used to used to initialize the database and procrastinate schema in the `ml-artifacts-db` PostgreSQL database, ensuring that the environment is ready before the training workers are initialized.
+3. Automated training (Cronjob): The `ml-periodic-trigger` cronjob trains models periodically (in this case 20 minutes). This ensures that the LSTM models are consistently updated with the most recent data.
+4. Security (Reflectors): Database credentials is injected into the pods via `Secrets` mirrored by the `Emberstack Reflector`
+5. Configurations (ConfigMap): Environemt specific variables are managed via `ConfigMap`.
 
 ## Microservice - Monitoring Application
 
@@ -259,6 +280,8 @@ The current training pipeline is completely automated and is only capable of tra
 ## Locally Hosted
 
 The entire development process of this solution was done locally using `minikube`. Hence, it requires extra work to be integrated in a production environment, such as in cloud infrastructure.
+
+## Microservice - Headlamp Monitoring
 
 
 
