@@ -30,9 +30,13 @@
 
 The goal of AquaBoard is the consolidation of real-time sensor data streams in aquaponics systems.
 
-With the onset of Singapore's goal of self-sufficiency, vertical farming methods such as aquaponics and hydroponics are increasingly relevant. This is due to the lack of land area for traditional farming methods. Hence, this project aims to supplement current and future vertical farming infrastructure through the data science. Namely, allowing for the consolidation, presentation, and analysis of data.
+With the onset of Singapore's goal of self-sufficiency, vertical farming methods such as aquaponics and hydroponics are increasingly relevant. This is due to the lack of land area for traditional farming methods. Hence, **this project aims to supplement current and future vertical farming infrastructure through the consolidation, presentation, and analysis of data**.
 
-This project leverages Kubernetes architecture to create a scalable, available, and fault tolerant unerlying system.
+## Project Objectives
+
+1. **Create a scalable, available, and fault tolerant solution using Kubernetes and Docker.** This ensure that the application can handle spikes in traffic, maintain uptime, and preserve data integrity.
+2. **Support the collection of sensor data for visualisation and forecasting** to enable data-driven decision-making through the transformation of raw, high-frequency signals into actionable insights.
+3. **Implement Continuous Monitoring and Continuous Training** to detect data and model drift over time and automate retraining.
 
 # Execution Instructions
 
@@ -349,6 +353,7 @@ The current training pipeline is completely automated and is only capable of tra
 ## Locally Hosted
 
 The entire development process of this solution was done locally using `minikube`. Hence, it requires extra work to be integrated in a production environment, such as in cloud infrastructure.
+
 
 
 
