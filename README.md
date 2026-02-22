@@ -139,28 +139,96 @@ kubectl apply -f ./k8s/training/training-jobs.yaml -l component=ml-force-train-j
 
 ## Microservice - PostgreSQL Database Clusters
 
-...
+### Explanation
 
+The database is built on the open-source object-relational database system know as PostreSQL and is used for storing the collected sensor data and machine learning model artifacts. There are two  database clusters with separate users, tables, and permissions, one for sensor data and one for ML model artifacts.
+
+The databases use a fault-tolerant and scalable architecture known as Read/Write Splitting. It consists of one writer database and N reader databases (in this case, the database is set up with 2 reader database instances). The readers replicate the data stored in the writer database, it serving as the single source of truth for the entire database cluster. This is very useful in read-heavy applications like this one since it prevents the overloading of the writer database when only querying information from the database.
+
+When the writer fails, the remaining replicas (readers) hold an election to decide who is the most up-to-date. The reader that wins this election is then promoted to become the new writer database. The old writer database is then forcefully deleted and cut off (to prevent the split-brain problem) and the database cluster carries on normal operations with a new writer while the old writer pod is killed, reset and restarted as a reader pod.
+
+In order to achieve this, the solution uses the CloudNativePG operator to handle the Read/Write Splitting logic between the pods in the database cluster. Both the sensor and ML database use this operator.
+
+### Functionality
+
+Inside the Kubernetes cluster, the **sensor database** is connected to every microservice through the `sensor-db-ha-rw.database-ns:5432` while the ML artifacts database is connected to the inference and training applications through `ml-artifacts-db.ml-artifacts-db-ns:5432` (ClusterIPs).
+
+Alongside storing data, they also store the `procrastinate` queues for the training and monitoring application backends, which is explained their respective sections. 
+
+Given that the databases are based on PostgreSQL, they can be accessed using the `psql` CLI tool, `pgAdmin` application, or the `SQLAlchemy` or `psycopg2` python libraries. These python libraries are also used as the main database access mechanism for all the downstream applications. The database is queries. 
+
+### Miscellaneous
+
+The `k8s\database\sensor-database\postgres-data-loader.yaml` and `k8s\database\sensor-database\postgres-job-configmap.yaml` are used to upload the Kaggle dataset into the database within the Kubernetes cluster via a Job.
+ 
 ## Microservice - MLFlow Training Pipeline
 
 
 ## Microservice - Monitoring Application
 
+### Explanation
+
+The monitoring application is designed to detect data drift within the database by taking the first X rows and comparing it with the next Y rows (e.g. Compare first 5,000 rows against the next 5,000 rows).
+
+It also includes a graphical user interface to allow access to the generated "data drift reports" which are documents that detail information such as the number of drifted columns, Population Stability Index scores for each column, and percentage of drifted columns.
+
+### Functionality
+
+The monitoring application consists of three main "ends":
+1. Frontend deployment (Data drift reports UI)
+2. Middleend deployment (Dealing with API calls to the backend)
+3. Backend deployment (Generating data drift reports and call retraining pipeline)
+
+The Frontend deployment deals with the GUI of the monitoring application, allowing users to access and download the generated data drift reports using Evidently UI.
+
+The Middleend deployment serves as the middleman between inbound requests and the backend which actually does the report generation. When a POST API request comes into the Middleend, it formats it and adds the job to a `procrastinate` queue inside the PostgreSQL database. It then sends a 200_OK status code to the requester and waits for the next request.
+
+The Backend deployment deals with data drift detection and report generation. It listens to the `procrastinate` queue and when it receives a job (containing the required data payload), it generates a data drift report. Data drift is measured using the Population Stability Index test. If more than X% of the columns have data drift, the backend will send a request to the training pipeline to retrain the existing model.
+
+## Miscellaneous
+
+The monitoring for data drift is a requires a task that is scheduled in regular intervals. A CronJob is used to schedule this report generation, and it is run every day at midnight. In order to prevent large data spikes at midnight (especially when there are a lot of tables), the CronJob creates an IndexedJob that breaks down the generation into groups of X (as configured in the job ConfigMap). The IndexedJob creates a job that sends a request to the monitoring API. This helps to leverage on the scalability of Kubernetes deployments while also not overloading the monitoring middleend API.
 
 ## Microservice - Inference Pipeline
 
 
 ## Microservice - Dashboard Application
 
-## NGINX F5 NGINX Gateway Fabric
+## Microservice - GatewayAPI
+
+### Explanation
+
+GatewayAPI is the modern, official Kubernetes standard for managing how external traffic gets routed to the applications inside the Kubernetes cluster. I opted to use this instead of Ingress because it is the successor to the Ingress API. GatewayAPI improves on ingress by enabling a more standardised system across different controller implementations. It has built-in support for L4 connections (TCP, UDP) along with the L7 protocols (HTTP, HTTPS, gRCP). It also supports more advanced traffic management (traffic splitting, mirroring, injections) and HTTP routing (path, host, arbitrary header based routing).
+
+### Functionality
+
+In order to implement GatewayAPI, I used NGINX F5 NGINX Gateway Fabric, which is an open-source implementation that uses NGINX as the data plane.
+
+The GatewayAPI is set up such that it connects the dashboard application, ingestion pipeline, and monitoring dashboard application to a load balancer. This can then be tunnelled out of the minikube virtual machine using `minikube service` or our `Makefile` function `make minikube-tunnel`.
+
+This allows for access to those services from outside of the Kubernetes cluster.
 
 # Data Source
 
+For testing, we used the Sensor-based Aquaponics Fish Pond Datasets found on Kaggle.
+
 1. Ogbuokiri, B. (2023). Sensor-based Aquaponics Fish Pond Datasets (Version 1) [Data set]. Kaggle. https://www.kaggle.com/datasets/ogbuokiriblessing/sensor-based-aquaponics-fish-pond-datasets
 
-# Limitations 
+# Known Issues & Limitations 
 
+## Data Flexibility
 
+The ingestion pipeline does not automatically create new tables when it receives an API call for a non-existent table inside the database. This makes it more difficult to add new ponds/sensor data tables into the database.
+
+Additionally, the addition of new sensor readings, configuration of scheduled monitoring jobs, and addition of new ponds to the dashboard is very limited, with the configurations requiring that the ConfigMaps are changed and the deployment is re-configured with the new environment variables.
+
+## Training Flexibility
+
+The current training pipeline is completely automated and is only capable of training an LSTM model, making it difficult to test different kinds of models for the data forecasting task.
+
+## Locally Hosted
+
+The entire development process of this solution was done locally using `minikube`. Hence, it requires extra work to be integrated in a production environment, such as in cloud infrastructure.
 
 
 
