@@ -215,6 +215,28 @@ The monitoring for data drift is a requires a task that is scheduled in regular 
 
 ## Microservice - Dashboard Application
 
+### Explanation
+The dashboard application serves as a way for farmers to understand the current pond data and the forecasted data through meaningful and simple visualizations. The dashboards consists of 3 different pages:
+
+ - A **main overview page** where the latest pond data from each pond is shown accompanied with an arrow indicating the future trend of the data
+ - A **secondary overivew page** visualizing each data column with line charts displaying the median, minimum and maximum values of all the pond data combined
+ - A **dedicated pond page** for each pond in the database showcasing the latest data values as well as a line graph for each column showing the current and forecasted data.
+    - Additionally, a button on each pond page can be triggered to check for data drift pertaining to that particular pond using the monitoring application
+
+With the help of the dashboard, the farmers can make informed decisions and therefore make the necessary changes to the ponds.
+
+
+### Functionality
+
+The dashboard application mainly consists of a  deployment acting as a frontend and backend.
+
+In terms of the frontend, the data visuals are mostly created using a python framework called `streamlit` for the dashboard layout and majority of the graphs. Additionally, `altair` is used for more complicated data visualizations.
+
+For the backend, the latest pond data is retrieved from the PostgreSQL database with the use of `SQLAlchemy`. Currently, it is set to retrieve the last 110 rows from each pond table. To obtain the model inference data, a cronjob is used to trigger model infernce in the inference deployment using `requests`. The cronjob is scheduled every hour to ensure that the dashboard always shows the latest forecasted values. The model inference outputs are then saved as a JSON file in a persistent volume for the dashboard deployment to retrieve and display. The data drift analysis is also triggered with the use of `requests` to the monitoring application.
+
+In the event that there are more ponds, more data columns, or the end-user wants the dashboard graphs to display more data points, all 3 can be configured in the dashboard config map under the respective environmental variables: `POND`, `SENSORS`, and `DATA_AMOUNT`. Additionally, the dashboard deployment makes use of a horizontal pod scaler to properly utilize CPU usage and scale when necessary.
+
+
 ## Microservice - Headlamp Monitoring
 
 ### Explanation
