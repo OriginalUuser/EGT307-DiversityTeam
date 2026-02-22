@@ -206,7 +206,7 @@ The Middleend deployment serves as the middleman between inbound requests and th
 
 The Backend deployment deals with data drift detection and report generation. It listens to the `procrastinate` queue and when it receives a job (containing the required data payload), it generates a data drift report. Data drift is measured using the Population Stability Index test. If more than X% of the columns have data drift, the backend will send a request to the training pipeline to retrain the existing model.
 
-## Miscellaneous
+### Miscellaneous
 
 The monitoring for data drift is a requires a task that is scheduled in regular intervals. A CronJob is used to schedule this report generation, and it is run every day at midnight. In order to prevent large data spikes at midnight (especially when there are a lot of tables), the CronJob creates an IndexedJob that breaks down the generation into groups of X (as configured in the job ConfigMap). The IndexedJob creates a job that sends a request to the monitoring API. This helps to leverage on the scalability of Kubernetes deployments while also not overloading the monitoring middleend API.
 
@@ -269,5 +269,6 @@ Headlamp’s integration with the cluster relies on strict `Role-Based Access Co
 2. NodePort: Allows the Headlamp's dashboard to be accessed from outside the cluster
 3. Liveness probe: Continuously contintors Headlamp web application to detect for `OpenTelemetry (OTLP)` connection hang. Will tell kubernetes to restart the pod if there is a connection issue
 4. Readiness probe: Continuously pings the Headlamp web app API to ensures the dashboard is ready. It prevents the pod from being added to the headlmap service endpoints until the dashboard is ready
+
 
 
