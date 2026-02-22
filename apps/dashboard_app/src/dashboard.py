@@ -222,47 +222,35 @@ else:
     # -------------------------------
     # 📡 Sidebar Report Trigger (Pond-Specific)
     # -------------------------------
-    with st.sidebar.expander(f"🛠️ Run Analysis for {selected_page}", expanded=True):
-        
-        # User configures columns and range
-        selected_sensor_labels = st.multiselect(
-            "Select Columns",
-            options=list(SENSORS.keys()),
-            default=list(SENSORS.keys())[:1] # Defaults to first 
-        )
-        
+    with st.sidebar.expander(f"🛠️ Run Data Drift Analysis for {selected_page}", expanded=True):
+            
         report_range = st.number_input(
             "Report Range (Rows)", 
             min_value=2000, max_value=100000, value=2000
         )
 
         if st.button("🚀 Trigger Monitoring Job"):
-            if not selected_sensor_labels:
-                st.warning("Please select at least one column.")
-            else:
-                db_column_names = [SENSORS[label] for label in selected_sensor_labels]
-                # Prepare the payload
-                payload = {
-                    "table_name": current_table,
-                    "columns": db_column_names,
-                    "report_range": report_range
-                }
+            # Prepare the payload
+            payload = {
+                "table_name": current_table,
+                "report_range": report_range
+            }
 
-                # API Details from Environment
-                mon_dns = os.getenv("MONITORING_DNS")
-                mon_port = os.getenv("MONITORING_PORT")
-                url = f"http://{mon_dns}:{mon_port}"
+            # API Details from Environment
+            mon_dns = os.getenv("MONITORING_DNS")
+            mon_port = os.getenv("MONITORING_PORT")
+            url = f"http://{mon_dns}:{mon_port}"
 
-                try:
-                    with st.spinner("Dispatching Job..."):
-                        response = requests.post(url, json=payload, timeout=5)
-                    
-                    if response.status_code == 200:
-                        st.success(f"Job triggered for {current_table}!")
-                    else:
-                        st.error(f"Failed to trigger: {response.status_code}")
-                except Exception as e:
-                    st.error(f"Could not connect to Monitoring Service: {e}")
+            try:
+                with st.spinner("Dispatching Job..."):
+                    response = requests.post(url, json=payload, timeout=5)
+                
+                if response.status_code == 200:
+                    st.success(f"Job triggered for {current_table}!")
+                else:
+                    st.error(f"Failed to trigger: {response.status_code}")
+            except Exception as e:
+                st.error(f"Could not connect to Monitoring Service: {e}")
 
 
 
