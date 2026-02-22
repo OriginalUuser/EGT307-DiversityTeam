@@ -10,7 +10,7 @@ spec:
     spec:
       containers:
       - name: db-initializer
-        image: 6zekiel/init-ml-artifacts-db-schema:v6
+        image: 6zekiel/init_db:v9
         command: ["python", "db_setup.py"]
         imagePullPolicy: IfNotPresent
         env:
@@ -56,7 +56,7 @@ spec:
         spec:
           containers:
           - name: trigger
-            image: 6zekiel/init-model-trainer-and-scheduler:v6
+            image: 6zekiel/training_scheduler:v9
             command: ["python", "training_scheduler.py"]
             env:
             - name: SENSOR_DB_USER
