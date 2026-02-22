@@ -9,11 +9,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install script requirements
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r db-requirements.txt
-
       - name: Set up minikube
         uses: medyagh/setup-minikube@latest
         with:
@@ -59,28 +54,6 @@ jobs:
           password: ${{ secrets.POSTGRES_PASS }}
           db: ${{ secrets.SENSOR_DB_NAME }}
           ssl: 'false'
-
-      # - name: Opening port for ML database testing
-      #   run: |
-      #     kubectl port-forward svc/ml-artifacts-db-rw 5433:5432 -n ml-artifacts-db-ns &
-      #     for i in {1..30}; do
-      #         if nc -z 127.0.0.1 5433; then
-      #             echo "Tunnel is open!"
-      #             break
-      #         fi
-      #         sleep 0.5
-      #     done
-
-      # - name: Testing ml artifact database cluster
-      #   uses: yakubique/query-postgresql@v1.2
-      #   with:
-      #     query: "SELECT * FROM training_history LIMIT 10"
-      #     host: 127.0.0.1
-      #     port: 5433
-      #     username: ${{ secrets.ML_POSTGRES_USER }}
-      #     password: ${{ secrets.ML_POSTGRES_PASS }}
-      #     db: ${{ secrets.ML_DB_NAME }}
-      #     ssl: 'false'
 
       - name: Testing monitoring deployment, send report generation request to API, send request to UI
         run: |
@@ -182,4 +155,3 @@ jobs:
 
           # Curl API to see if it exists
           curl http://127.0.0.1:8005
-      
