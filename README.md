@@ -145,6 +145,14 @@ kubectl create job -n monitoring-job-ns --from=cronjob/monitoring-scheduled-job 
 kubectl apply -f ./k8s/training/training-jobs.yaml -l component=ml-force-train-job
 ```
 
+## Step 6. Manual Model Inference
+Typically, the model will automatically perform data forecasting every hour. However, if you want to trigger the data forecasting immediately, you can create a job based on the scheduled inference cronjob.
+``` shell
+# Force run the inference cronjob to trigger model inference
+kubectl create job -n dashboard-ns --from=cronjob/inference-scheduled-job inference-job
+```
+The model will then perform data inference which can take a few minutes. Additionally, the dashboard may take a few minutes to update since it refreshes the forecasting data only every 10 minutes.
+
 ## Extra Instructions
 
 You can run components of the `Makefile` by themselves or sequentially. This can be used to set up specific applications only.
@@ -365,6 +373,7 @@ The current training pipeline is completely automated and is only capable of tra
 ## Locally Hosted
 
 The entire development process of this solution was done locally using `minikube`. Hence, it requires extra work to be integrated in a production environment, such as in cloud infrastructure.
+
 
 
 
