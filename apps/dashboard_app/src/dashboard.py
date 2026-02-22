@@ -127,9 +127,9 @@ if selected_page == "Main Page":
                     delta = next_prediction[col] - latest[col]
 
                     if delta > TREND_EPSILON:
-                        arrow, color = "🔺", "green"
+                        arrow, color = "▲", "green"
                     elif delta < -TREND_EPSILON:
-                        arrow, color = "🔻", "red"
+                        arrow, color = "▼", "red"
                     else:
                         arrow, color = "➖", "gray"
 
@@ -152,57 +152,6 @@ if selected_page == "Main Page":
 
         st.markdown("---")
 
-    # for pond_name, table_name in POND_FILES.items():
-    #     st.markdown(f"## 🌱 {pond_name}")
-
-    #     df = get_data(table_name, refresh_counter).sort_values("created_at").reset_index(drop=True)
-    #     forecast_df = get_real_forecast(pond_name)
-
-    #     if not df.empty:
-    #         latest = df.iloc[-1]
-    #         latest_time = latest["created_at"]
-            
-    #         # 1. Filter forecast to ONLY look at points in the future
-    #         # This handles the "catch up" issue.
-    #         future_points = forecast_df[forecast_df["created_at"] > latest_time]
-
-    #         if not future_points.empty:
-    #             # 2. Get the NEXT closest forecasted point
-    #             next_prediction = future_points.iloc[0] 
-    #             has_forecast = True
-    #         else:
-    #             has_forecast = False
-
-    #         cols = st.columns(len(SENSORS))
-
-    #         for i, (label, col) in enumerate(SENSORS.items()):
-    #             arrow, color = "➖", "gray"
-
-    #             if has_forecast and col in next_prediction:
-    #                 # 3. Compare current reality to the immediate next prediction
-    #                 delta = next_prediction[col] - latest[col]
-
-    #                 if delta > TREND_EPSILON:
-    #                     arrow, color = "🔺", "green"
-    #                 elif delta < -TREND_EPSILON:
-    #                     arrow, color = "🔻", "red"
-
-    #             with cols[i]:
-    #                 st.markdown(
-    #                     f"""
-    #                     <div style="text-align:center;">
-    #                         <div style="font-size:14px; font-weight:600;">{label}</div>
-    #                         <div style="font-size:22px;">
-    #                             {latest[col]:.2f}
-    #                             <span style="color:{color};">{arrow}</span>
-    #                         </div>
-    #                     </div>
-    #                     """,
-    #                     unsafe_allow_html=True
-    #                 )
-
-    #     st.markdown("---")
-
 
 # =====================================================
 # AGGREGATE OVERVIEW PAGE
@@ -215,14 +164,12 @@ elif selected_page == "Aggregate Overview":
         df = get_data(table_name, refresh_counter).sort_values("created_at").reset_index(drop=True)
         pond_dfs.append(df)
 
-    #base_df, _ = get_window_data(pond_dfs[0])
     time_index = pond_dfs[0]["created_at"]
 
     for label, col in SENSORS.items():
         aligned = []
         for df in pond_dfs:
             aligned.append(df.loc[df.index, col].values)
-            #aligned.append(df[col].values)
 
         agg_df = pd.DataFrame(aligned).T
         stats_df = pd.DataFrame({
@@ -286,7 +233,7 @@ else:
         
         report_range = st.number_input(
             "Report Range (Rows)", 
-            min_value=10, max_value=2000, value=100
+            min_value=2000, max_value=100000, value=2000
         )
 
         if st.button("🚀 Trigger Monitoring Job"):
@@ -304,7 +251,7 @@ else:
                 # API Details from Environment
                 mon_dns = os.getenv("MONITORING_DNS")
                 mon_port = os.getenv("MONITORING_PORT")
-                url = f"http://{mon_dns}:{mon_port}/trigger"
+                url = f"http://{mon_dns}:{mon_port}"
 
                 try:
                     with st.spinner("Dispatching Job..."):

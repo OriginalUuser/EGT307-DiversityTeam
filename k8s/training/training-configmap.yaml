@@ -1,12 +1,12 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: ml-config
-  namespace: ml-application-ns
-data:
-  sensor-db-host: "sensor-db-ha-rw.database-ns"
-  ml-db-host: "ml-artifacts-db-rw.ml-artifacts-db-ns"
-  sensor-db-name: "sensor-db"
-  ml-db-name: "ml-artifacts"
-  db-port: "5432"
-  rows-limit: "5000"
+  apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: ml-config
+    namespace: ml-application-ns
+  data:
+    sensor-db-host: "sensor-db-ha-rw.database-ns"
+    ml-db-host: "ml-artifacts-db-rw.ml-artifacts-db-ns"
+    sensor-db-name: "sensor-db"
+    ml-db-name: "ml-artifacts"
+    db-port: "5432"
+    rows-limit: "5000"
