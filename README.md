@@ -11,33 +11,18 @@
 
 ```
 .
-├── apps
-│   ├── dashboard_app
-│   │   ├── get_inference
-│   │   │   └── src
-│   │   └── src
+├── apps        # APPLICATION CODE
+│   ├── dashboard_app    
 │   ├── database_app
-│   │   ├── dockerfiles
-│   │   └── src
-│   │       └── scripts
-│   │           └── python_helpers
 │   ├── inference_app
-│   │   └── src
 │   ├── ingestion_app
-│   │   └── src
 │   ├── monitoring_app
 │   │   ├── backend_app
-│   │   │   └── src
 │   │   ├── frontend_app
 │   │   ├── job_code
-│   │   │   ├── cronjob
-│   │   │   └── procrastinate_setup
 │   │   └── middleend_app
-│   │       └── src
 │   └── training_app
-│       ├── dockerfiles
-│       └── src
-├── k8s
+├── k8s         # KUBERNETES MANIFEST FILES
 │   ├── dashboard
 │   ├── database
 │   │   ├── ml-artifacts-database
@@ -48,8 +33,9 @@
 │   ├── ingestion
 │   ├── monitoring
 │   └── training
-├── scripts
-└── test
+├── scripts    # SCRIPTS FOR SETTING UP K8S CLUSTER
+├── test       # TEST SCRIPTS AND NOTEBOOKS
+└── Makefile   # Makefile for setting up cluster (file)
 ```
 
 # Project Objectives
@@ -379,6 +365,7 @@ The current training pipeline is completely automated and is only capable of tra
 ## Locally Hosted
 
 The entire development process of this solution was done locally using `minikube`. Hence, it requires extra work to be integrated in a production environment, such as in cloud infrastructure.
+
 
 
 
