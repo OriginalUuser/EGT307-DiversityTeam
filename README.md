@@ -129,21 +129,30 @@ kubectl create job -n monitoring-job-ns --from=cronjob/monitoring-scheduled-job 
 kubectl apply -f ./k8s/training/training-jobs.yaml -l component=ml-force-train-job
 ```
 
----
-
-### REGARDING MODEL INFERENCE
-
-Refer to [model_inference_example.ipynb](test/model_inference_example.ipynb) on how to use the model for inference.
-
 # System Architecture
 
-## Microservice 1
+![alt text](image.png)
+
+## Microservice - Ingestion Pipeline
 
 ...
 
-## Microservice n
+## Microservice - PostgreSQL Database Clusters
 
 ...
+
+## Microservice - MLFlow Training Pipeline
+
+
+## Microservice - Monitoring Application
+
+
+## Microservice - Inference Pipeline
+
+
+## Microservice - Dashboard Application
+
+## NGINX F5 NGINX Gateway Fabric
 
 # Data Source
 
