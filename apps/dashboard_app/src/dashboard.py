@@ -65,11 +65,11 @@ st.caption(
 data_amount_raw = os.getenv('DATA_AMOUNT')
 DATA_AMOUNT = int(data_amount_raw)
 
-@st.cache_data
+@st.cache_data(ttl=refresh_rate)
 def get_data(table_name, refresh_counter):
     return load_pond_data(
         table_name=table_name,
-        data_amount= DATA_AMOUNT
+        data_amount=DATA_AMOUNT
     )
 
 # -------------------------------
