@@ -215,6 +215,25 @@ The monitoring for data drift is a requires a task that is scheduled in regular 
 
 ## Microservice - Dashboard Application
 
+## Microservice - Headlamp Monitoring
+
+### Explanation
+`Headlamp` offers a graphical user interface (GUI) for monitoring and managing the Kubernetes cluster. It is a more extensible and user-friendly alternative to the standard Kubernetes Dashboard, providing real-time visibility into the health of all microservices in the cluster.
+
+Our implementation of `Headlamp` is configured to run with `In-Cluster` mode, which allows for communication with the Kubernetes API server using a dedicated `Service Account`. Additionally, to provide deeper observabiity, Headlamp is integrated with the cluster's observability stack via the OpenTelemetry (OTLP) protocol.
+
+### Functionality
+
+1. Observability Integration: Headlamp is connected to an `OpenTelemetry Collector` to provide native tracing and metrics visualization directly within the GUI
+2. Resource Management: Provides a high level overview of all kubernetes primitives across all namespaces
+
+### Kubernetes Orchestration
+Headlamp’s integration with the cluster relies on strict `Role-Based Access Control (RBAC)` and `networking configurations`:
+1. Role-Based Access Control (RBAC): A dedicated `ServiceAccount` is paired with a `ClusterRole` and `ClusterRoleBinding`. This grants Headlamp the necessary permissions to view and manage resources across the entire cluster `(verbs: *)`
+2. NodePort: Allows the Headlamp's dashboard to be accessed from outside the cluster
+3. Liveness probe: Continuously contintors Headlamp web application to detect for `OpenTelemetry (OTLP)` connection hang. Will tell kubernetes to restart the pod if there is a connection issue
+4. Readiness probe: Continuously pings the Headlamp web app API to ensures the dashboard is ready. It prevents the pod from being added to the headlmap service endpoints until the dashboard is ready
+
 ## Microservice - GatewayAPI
 
 ### Explanation
@@ -251,24 +270,6 @@ The current training pipeline is completely automated and is only capable of tra
 
 The entire development process of this solution was done locally using `minikube`. Hence, it requires extra work to be integrated in a production environment, such as in cloud infrastructure.
 
-## Microservice - Headlamp Monitoring
-
-### Explanation
-`Headlamp` offers a graphical user interface (GUI) for monitoring and managing the Kubernetes cluster. It is a more extensible and user-friendly alternative to the standard Kubernetes Dashboard, providing real-time visibility into the health of all microservices in the cluster.
-
-Our implementation of `Headlamp` is configured to run with `In-Cluster` mode, which allows for communication with the Kubernetes API server using a dedicated `Service Account`. Additionally, to provide deeper observabiity, Headlamp is integrated with the cluster's observability stack via the OpenTelemetry (OTLP) protocol.
-
-### Functionality
-
-1. Observability Integration: Headlamp is connected to an `OpenTelemetry Collector` to provide native tracing and metrics visualization directly within the GUI
-2. Resource Management: Provides a high level overview of all kubernetes primitives across all namespaces
-
-### Kubernetes Orchestration
-Headlamp’s integration with the cluster relies on strict `Role-Based Access Control (RBAC)` and `networking configurations`:
-1. Role-Based Access Control (RBAC): A dedicated `ServiceAccount` is paired with a `ClusterRole` and `ClusterRoleBinding`. This grants Headlamp the necessary permissions to view and manage resources across the entire cluster `(verbs: *)`
-2. NodePort: Allows the Headlamp's dashboard to be accessed from outside the cluster
-3. Liveness probe: Continuously contintors Headlamp web application to detect for `OpenTelemetry (OTLP)` connection hang. Will tell kubernetes to restart the pod if there is a connection issue
-4. Readiness probe: Continuously pings the Headlamp web app API to ensures the dashboard is ready. It prevents the pod from being added to the headlmap service endpoints until the dashboard is ready
 
 
 
