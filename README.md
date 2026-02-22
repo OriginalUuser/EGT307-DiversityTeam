@@ -129,6 +129,28 @@ kubectl create job -n monitoring-job-ns --from=cronjob/monitoring-scheduled-job 
 kubectl apply -f ./k8s/training/training-jobs.yaml -l component=ml-force-train-job
 ```
 
+## Extra Instructions
+
+You can run components of the `Makefile` by themselves or sequentially. This can be used to set up specific applications only.
+```shell
+# Individual execution
+make <component>
+
+# Sequential execution
+make <component1> <component2>
+```
+
+Resetting or deleting the cluster
+```shell
+# Reset via deletion of cluster resources - This takes a very long time
+make clean
+# Reset and rerun via deletion of cluster resources
+make rebuild
+
+# Reset via deletion of minikube VM
+make shutdown
+```
+
 # System Architecture
 
 ![alt text](image.png)
@@ -236,7 +258,6 @@ For the backend, the latest pond data is retrieved from the PostgreSQL database 
 
 In the event that there are more ponds, more data columns, or the end-user wants the dashboard graphs to display more data points, all 3 can be configured in the dashboard config map under the respective environmental variables: `POND`, `SENSORS`, and `DATA_AMOUNT`. Additionally, the dashboard deployment makes use of a horizontal pod scaler to properly utilize CPU usage and scale when necessary.
 
-
 ## Microservice - Headlamp Monitoring
 
 ### Explanation
@@ -291,6 +312,7 @@ The current training pipeline is completely automated and is only capable of tra
 ## Locally Hosted
 
 The entire development process of this solution was done locally using `minikube`. Hence, it requires extra work to be integrated in a production environment, such as in cloud infrastructure.
+
 
 
 
