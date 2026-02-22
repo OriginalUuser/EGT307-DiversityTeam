@@ -67,7 +67,7 @@ class Pond:
         if columnData.name == 'created_at':
             delta = self.entry_id * pd.Timedelta(milliseconds=self.freq)
             
-            return str(self.startTime + delta)
+            return self.startTime + delta
         
         if columnData.name == 'entry_id':
             self.entry_id += 1
@@ -95,7 +95,6 @@ class Pond:
 
     def compileRowData(self) -> list:
         rowData = {col.name: self.generateColumnData(col) for col in columns}
-        rowData["entry_id"] = "default"
         return rowData
     
     def dataStream(self):
