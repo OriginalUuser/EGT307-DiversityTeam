@@ -25,11 +25,12 @@ metadata:
   name: monitoring-job-config
   namespace: monitoring-job-ns
 data:
-  # Completion count should be the same as the 
-  completion_count: "9"
+  # Completion count should be the same as the number of tables
+  completion_count: "4"
   parallelism_count: "4"
   # iot_pond_7,iot_pond_8,iot_pond_9 are excluded since the test dataset contains fully empty columns
-  tables: "iot_pond_1,iot_pond_2,iot_pond_3,iot_pond_4,iot_pond_6,iot_pond_10,iot_pond_11,iot_pond_12"  
+  # iot_pond_6,iot_pond_10,iot_pond_11,iot_pond_12 are excluded since only the first 4 ponds contain good enough data
+  tables: "iot_pond_1,iot_pond_2,iot_pond_3,iot_pond_4"  
   range: "10000"
   columns: "temperature,turbidity,dissolved_oxygen,ph,ammonia,nitrate,population,fish_length,fish_weight"
   dns: "monitoring-middle-service.monitoring-ns"

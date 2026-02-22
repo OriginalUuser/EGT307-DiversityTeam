@@ -8,7 +8,7 @@ data:
   DATABASE_PORT: "5432"
   DATA_AMOUNT: "110"
   MONITORING_DNS: "monitoring-middle-service.monitoring-ns"
-  MONITORING_PORT: "8001"
+  MONITORING_PORT: "8000"
   POND: |
     {
       "Pond 1": "iot_pond_1",

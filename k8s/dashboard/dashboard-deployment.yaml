@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: dashboard-pipeline
-        image: docker.io/crapulous/div_team_dashboard:1.3             
+        image: docker.io/crapulous/div_team_dashboard:1.6            
         command: ["streamlit", "run", "src/dashboard.py", "--server.port=8080", "--server.address=0.0.0.0", "--server.headless=true", "--browser.gatherUsageStats=false"]
         resources:
           limits:
