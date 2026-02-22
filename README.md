@@ -157,13 +157,34 @@ make shutdown
 
 ## Microservice - Ingestion Pipeline
 
-...
+### Explanation
+
+The Ingestion Pipeline is a Fast API, set up to receive POST requests from the pond sensors, validate the data received, and send it to the sensor database.
+The Ingestion service is exposed outside the cluster through the Gateway API.
+
+To handle the forecasted POST requests of 11 ponds, the Ingestion microservice has a horizontal pod scaler to properly utilize CPU usage and scale when necessary.
+
+### Functionality
+
+The data schema is verified through the following series of checks:
+1. Are all the expected columns present?
+    - If <=20% missing, impute with previous value (reasonable value for initial)
+    - If >20% missing, discard payload
+2. ~~Are there any additional columns?~~ (Functionality removed in favour of lower processing load)
+    ~~- If Yes, create new column in database and update expected schema~~
+3. Are they in the proper format?
+    - Typecast all to appropriate type
+    - If unable, impute with previous value (reasonable value for initial)
+  
+The Ingestion Pipeline uses psycopg2 to connect to the sensor database at `sensor-db-ha-rw.database-ns:5432`.
+The table chosen to insert data into is set by the received payload's `table_name` attribute. If no matching table exists, the data is discarded.
+Formatted data is inserted into the sensor database using an sql query.
 
 ## Microservice - PostgreSQL Database Clusters
 
 ### Explanation
 
-The database is built on the open-source object-relational database system know as PostreSQL and is used for storing the collected sensor data and machine learning model artifacts. There are two  database clusters with separate users, tables, and permissions, one for sensor data and one for ML model artifacts.
+The database is built on the open-source object-relational database system known as PostreSQL and is used for storing the collected sensor data and machine learning model artifacts. There are two  database clusters with separate users, tables, and permissions, one for sensor data and one for ML model artifacts.
 
 The databases use a fault-tolerant and scalable architecture known as Read/Write Splitting. It consists of one writer database and N reader databases (in this case, the database is set up with 2 reader database instances). The readers replicate the data stored in the writer database, it serving as the single source of truth for the entire database cluster. This is very useful in read-heavy applications like this one since it prevents the overloading of the writer database when only querying information from the database.
 
@@ -234,6 +255,22 @@ The monitoring for data drift is a requires a task that is scheduled in regular 
 
 ## Microservice - Inference Pipeline
 
+### Explanation
+
+The Inference Pipeline is a Fast API, set up to receive POST requests from the dashboard, perform the requested predictions using the latest models, and return the predictions to the dashboard for visualisation.
+
+To handle the forecasted POST requests of predicting the sensor data for 11 ponds every hour, the Inference microservice has a horizontal pod scaler to properly utilize CPU usage and scale when necessary.
+
+### Functionality
+
+Each time a POST request is received, the Inference Pipeline carries out the following steps:
+1. Read latest data from sensor database with psycopg2
+2. Read trained model from ML database, and load it with tensorflow
+3. Make inference with tensorflow
+4. Return inference to dashboard
+
+The Inference Pipeline is connected to both the sensor database and ML database using psycopg2, at `sensor-db-ha-rw.database-ns:5432` and `ml-artifacts-db-rw.ml-artifacts-db-ns:5432` respectively.
+
 
 ## Microservice - Dashboard Application
 
@@ -250,7 +287,7 @@ With the help of the dashboard, the farmers can make informed decisions and ther
 
 ### Functionality
 
-The dashboard application mainly consists of a  deployment acting as a frontend and backend.
+The dashboard application mainly consists of a deployment acting as a frontend and backend.
 
 In terms of the frontend, the data visuals are mostly created using a python framework called `streamlit` for the dashboard layout and majority of the graphs. Additionally, `altair` is used for more complicated data visualizations.
 
@@ -312,6 +349,7 @@ The current training pipeline is completely automated and is only capable of tra
 ## Locally Hosted
 
 The entire development process of this solution was done locally using `minikube`. Hence, it requires extra work to be integrated in a production environment, such as in cloud infrastructure.
+
 
 
 
