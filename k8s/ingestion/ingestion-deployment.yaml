@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: ingestion-pipeline
-        image: docker.io/originaluuser/divteam_ingestion:1.0
+        image: docker.io/originaluuser/divteam_ingestion:1.1
         command: ["uvicorn", "src.app:app", "--host", "0.0.0.0", "--port", "8080" ]
         resources:
           limits:
@@ -39,12 +39,22 @@ spec:
               configMapKeyRef:
                 name: ingestion-config
                 key: DATABASE_PORT
+          - name: DATABASE_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: ingestion-config
+                key: DATABASE_NAME
+          - name: DATABASE_USER
+            valueFrom:
+              secretKeyRef:
+                name: mirror-postgres-credentials-admin
+                key: username
           - name: POSTGRES_PASS
             valueFrom:
               secretKeyRef:
                 name: mirror-postgres-credentials-admin
                 key: password
-
+                
 ---
 
 apiVersion: v1

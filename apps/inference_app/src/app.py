@@ -17,47 +17,47 @@ import psycopg2
 from .inference import makeInference
 
 # Connect to database
-DB_POSTGRES_PASS = os.getenv("DB_POSTGRES_PASS")
-DB_DATABASE_DNS = os.getenv("DB_DATABASE_DNS")
+DB_POSTGRES_PASS =  os.getenv("DB_POSTGRES_PASS")
+DB_DATABASE_DNS =   os.getenv("DB_DATABASE_DNS")
 
-ML_POSTGRES_PASS = os.getenv("ML_POSTGRES_PASS")
-ML_DATABASE_DNS = os.getenv("ML_DATABASE_DNS")
+ML_POSTGRES_PASS =  os.getenv("ML_POSTGRES_PASS")
+ML_DATABASE_DNS =   os.getenv("ML_DATABASE_DNS")
 
-DATABASE_PORT = os.getenv("DATABASE_PORT")
+DATABASE_PORT =     os.getenv("DATABASE_PORT")
 
 # Sensor Database
 DB_NAME = "sensor-db"
 DB_USER = "admin"
 
-db_conn = psycopg2.connect(
-    user=DB_USER,
-    password=DB_POSTGRES_PASS,
-    host=DB_DATABASE_DNS,
-    port=DATABASE_PORT,
-    database=DB_NAME,
-    keepalives=1,
-    keepalives_idle=20,   # Seconds of idle time before sending a keepalive probe
-    keepalives_interval=10, # Seconds between keepalive probes
-    keepalives_count=15    # Number of probes before considering the connection dead
-)
-db_conn.autocommit = True
+# db_conn = psycopg2.connect(
+#     user=DB_USER,
+#     password=DB_POSTGRES_PASS,
+#     host=DB_DATABASE_DNS,
+#     port=DATABASE_PORT,
+#     database=DB_NAME,
+#     keepalives=1,
+#     keepalives_idle=20,   # Seconds of idle time before sending a keepalive probe
+#     keepalives_interval=10, # Seconds between keepalive probes
+#     keepalives_count=15    # Number of probes before considering the connection dead
+# )
+# db_conn.autocommit = True
 
 # Model Database
 ML_NAME = "ml-artifacts"
 ML_USER = "ml_admin"
 
-ml_conn = psycopg2.connect(
-    user=ML_USER,
-    password=ML_POSTGRES_PASS,
-    host=ML_DATABASE_DNS,
-    port=DATABASE_PORT,
-    database=ML_NAME,
-    keepalives=1,
-    keepalives_idle=20,   # Seconds of idle time before sending a keepalive probe
-    keepalives_interval=10, # Seconds between keepalive probes
-    keepalives_count=15    # Number of probes before considering the connection dead
-)
-ml_conn.autocommit = True
+# ml_conn = psycopg2.connect(
+#     user=ML_USER,
+#     password=ML_POSTGRES_PASS,
+#     host=ML_DATABASE_DNS,
+#     port=DATABASE_PORT,
+#     database=ML_NAME,
+#     keepalives=1,
+#     keepalives_idle=20,   # Seconds of idle time before sending a keepalive probe
+#     keepalives_interval=10, # Seconds between keepalive probes
+#     keepalives_count=15    # Number of probes before considering the connection dead
+# )
+# ml_conn.autocommit = True
 
 # Setup app
 app = FastAPI()
@@ -71,13 +71,15 @@ class Evaluate(BaseModel):
 # Accept payload
 @app.post("/", status_code=status.HTTP_200_OK)
 def post_root(payload: Evaluate):
-    result_df = makeInference(
-        sensor_conn=db_conn,
-        ml_conn=ml_conn,
-        table_name=payload.table_name,
-        window_size=payload.window_size,
-        horizon=payload.horizon
-    )
+    with psycopg2.connect(user=DB_USER, password=DB_POSTGRES_PASS, host=DB_DATABASE_DNS, port=DATABASE_PORT, database=DB_NAME) as db_conn, \
+         psycopg2.connect(user=ML_USER, password=ML_POSTGRES_PASS, host=ML_DATABASE_DNS, port=DATABASE_PORT, database=ML_NAME) as ml_conn:
+        result_df = makeInference(
+            sensor_conn=db_conn,
+            ml_conn=ml_conn,
+            table_name=payload.table_name,
+            window_size=payload.window_size,
+            horizon=payload.horizon
+        )
 
     final_results = result_df.to_dict(orient="records")
     return final_results

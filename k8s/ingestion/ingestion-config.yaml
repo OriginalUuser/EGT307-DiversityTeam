@@ -4,5 +4,6 @@ metadata:
   name: ingestion-config
   namespace: ingestion-ns
 data:
+  DATABASE_NAME: "sensor-db"
   DATABASE_DNS: "sensor-db-ha-rw.database-ns"
   DATABASE_PORT: "5432"
