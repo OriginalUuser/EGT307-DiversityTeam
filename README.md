@@ -129,14 +129,6 @@ kubectl create job -n monitoring-job-ns --from=cronjob/monitoring-scheduled-job 
 kubectl apply -f ./k8s/training/training-jobs.yaml -l component=ml-force-train-job
 ```
 
-## Step 6. Manual Model Inference
-Typically, the model will automatically perform data forecasting every hour. However, if you want to trigger the data forecasting immediately, you can create a job based on the scheduled inference cronjob.
-``` shell
-# Force run the inference cronjob to trigger model inference
-kubectl create job -n dashboard-ns --from=cronjob/inference-scheduled-job inference-job
-```
-The model will then perform data inference which can take a few minutes.
-
 # System Architecture
 
 ![alt text](image.png)
@@ -172,7 +164,7 @@ The `k8s\database\sensor-database\postgres-data-loader.yaml` and `k8s\database\s
 ## Microservice - Training Pipeline
 
 ### Explanation
-The training pipeline is designed to be a distributed, asynchronous system responsible to automate the retraining of LSTM (Long Short-Term Memory) models using historical sensor data. in order to maintain high availability and system responsiveness, the architecture decouples the task scheduling from the training workers (A seperate container instance of the training pipeline).
+The training pipeline is designed to be a distributed, asynchronous system responsible to automate the retraining of LSTM (Long Short-Term Memory) models using historical sensor data. In order to maintain **high availability** and **system responsiveness**, the architecture decouples the task scheduling from the training workers (A seperate container instance of the training pipeline).
 
 This is achieved with `Procrastinate`, a PostgreSQL-based task queue that manages job distribution. Training jobs can be injected into the task queue via two mechanisms: `cronjobs` or via `API`. Once jobs are queued, independent training workers can execute these jobs. This design, coupled with `HPA` allows the system to scale the number of training workers horizontally if there is an influx of training jobs.
 
@@ -223,28 +215,6 @@ The monitoring for data drift is a requires a task that is scheduled in regular 
 
 ## Microservice - Dashboard Application
 
-### Explanation
-
-The dashboard application serves as a way for farmers to understand the current pond data and the forecasted data through meaningful and simple visualizations. The dashboards consists of 3 different pages:
-
- - A **main overview page** where the latest pond data from each pond is shown accompanied with an arrow indicating the future trend of the data
- - A **secondary overivew page** visualizing each data column with line charts displaying the median, mean and max of all the pond data for each column
- - A **dedicated pond page** for each pond in the database showcasing the latest data values as well as a line graph for each column showing the current and forecasted data.
-
-
-### Functionality
-
-The dashboard application mainly consists of a  deployment acting as a frontend and backend.
-
-In terms of the frontend, the data visuals are mostly created using a python framework called Streamlit for the dashboard layout and majority of the graphs. Additionally, Altair is used for more complicated data visualizations.
-
-For the backend, the latest pond data is retrieved from the PostgreSQL database with the use of SQLAlchemy. To obtain the model inference data, a cronjob is used to send a request periodically to the inference deployment. The model inference outputs are then saved as a JSON file in a Persistent volume for the dashboard deployment to retrieve and display.
-
-
-
-
-
-
 ## Microservice - GatewayAPI
 
 ### Explanation
@@ -283,5 +253,21 @@ The entire development process of this solution was done locally using `minikube
 
 ## Microservice - Headlamp Monitoring
 
+### Explanation
+`Headlamp` offers a graphical user interface (GUI) for monitoring and managing the Kubernetes cluster. It is a more extensible and user-friendly alternative to the standard Kubernetes Dashboard, providing real-time visibility into the health of all microservices in the cluster.
+
+Our implementation of `Headlamp` is configured to run with `In-Cluster` mode, which allows for communication with the Kubernetes API server using a dedicated `Service Account`. Additionally, to provide deeper observabiity, Headlamp is integrated with the cluster's observability stack via the OpenTelemetry (OTLP) protocol.
+
+### Functionality
+
+1. Observability Integration: Headlamp is connected to an `OpenTelemetry Collector` to provide native tracing and metrics visualization directly within the GUI
+2. Resource Management: Provides a high level overview of all kubernetes primitives across all namespaces
+
+### Kubernetes Orchestration
+Headlamp’s integration with the cluster relies on strict `Role-Based Access Control (RBAC)` and `networking configurations`:
+1. Role-Based Access Control (RBAC): A dedicated `ServiceAccount` is paired with a `ClusterRole` and `ClusterRoleBinding`. This grants Headlamp the necessary permissions to view and manage resources across the entire cluster `(verbs: *)`
+2. NodePort: Allows the Headlamp's dashboard to be accessed from outside the cluster
+3. Liveness probe: Continuously contintors Headlamp web application to detect for `OpenTelemetry (OTLP)` connection hang. Will tell kubernetes to restart the pod if there is a connection issue
+4. Readiness probe: Continuously pings the Headlamp web app API to ensures the dashboard is ready. It prevents the pod from being added to the headlmap service endpoints until the dashboard is ready
 
 
